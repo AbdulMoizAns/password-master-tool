@@ -3,709 +3,1039 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Password Master – Security Education</title>
+    <title>Password Master v2.0 | Secure Environment</title>
     <style>
         :root {
             --bg-color: #0a0a0a;
-            --terminal-bg: #0f0f0f;
-            --text-main: #e0e0e0;
-            --accent-green: #00ff41;
-            --accent-dim: #008f11;
+            --terminal-bg: #0c0c0c;
+            --text-color: #e0e0e0;
+            --primary-color: #00ff41;
+            --primary-dim: #008f11;
+            --alert-color: #ff3333;
+            --warning-color: #ffcc00;
             --border-color: #333;
-            --card-bg: #161616;
-            --error-red: #ff3333;
             --font-mono: 'Courier New', Courier, monospace;
-            --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
             background-color: var(--bg-color);
-            color: var(--text-main);
-            font-family: var(--font-sans);
-            line-height: 1.6;
-            min-height: 100vh;
+            color: var(--text-color);
+            font-family: var(--font-mono);
+            height: 100vh;
+            overflow: hidden;
             display: flex;
             flex-direction: column;
         }
 
-        /* --- Layout & Navigation --- */
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
+        .hidden { display: none !important; }
+        .text-green { color: var(--primary-color); }
+        .text-red { color: var(--alert-color); }
+        .text-yellow { color: var(--warning-color); }
+        
+        .btn {
+            background: transparent;
+            border: 1px solid var(--primary-color);
+            color: var(--primary-color);
+            padding: 8px 16px;
+            font-family: var(--font-mono);
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+        .btn:hover {
+            background: var(--primary-color);
+            color: var(--bg-color);
+            box-shadow: 0 0 10px var(--primary-color);
+        }
+        .btn-danger {
+            border-color: var(--alert-color);
+            color: var(--alert-color);
+        }
+        .btn-danger:hover {
+            background: var(--alert-color);
+            color: white;
+            box-shadow: 0 0 10px var(--alert-color);
+        }
+
+        /* Terminal Screen */
+        #terminal-screen {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--terminal-bg);
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            overflow-y: auto;
+        }
+        .terminal-content {
+            width: 100%;
+            max-width: 800px;
+            border: 1px solid var(--primary-dim);
             padding: 20px;
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.1);
+        }
+        .terminal-header {
+            border-bottom: 1px solid var(--primary-dim);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .log-line {
+            margin-bottom: 5px;
+            opacity: 0;
+            animation: fadeIn 0.1s forwards;
+        }
+        @keyframes fadeIn { to { opacity: 1; } }
+        .cursor::after {
+            content: '_';
+            animation: blink 1s infinite;
+        }
+        @keyframes blink { 50% { opacity: 0; } }
+        
+        #launch-btn-container {
+            margin-top: 30px;
+            text-align: center;
+            opacity: 0;
+            transition: opacity 1s;
+        }
+
+        /* Tool Screen */
+        #tool-screen {
             flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            overflow-y: auto;
+            max-width: 1400px;
+            margin: 0 auto;
             width: 100%;
         }
 
         header {
-            border-bottom: 1px solid var(--accent-dim);
-            padding: 20px 0;
-            margin-bottom: 30px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-        }
-
-        h1, h2, h3 { font-family: var(--font-mono); color: var(--accent-green); text-transform: uppercase; letter-spacing: 1px; }
-        h1 { font-size: 1.5rem; }
-        
-        .nav-links button {
-            background: none;
-            border: 1px solid transparent;
-            color: var(--text-main);
-            padding: 8px 16px;
-            cursor: pointer;
-            font-family: var(--font-mono);
-            transition: all 0.3s;
-        }
-
-        .nav-links button:hover, .nav-links button.active {
-            border-color: var(--accent-green);
-            color: var(--accent-green);
-            box-shadow: 0 0 10px rgba(0, 255, 65, 0.2);
-        }
-
-        /* --- Views --- */
-        .view-section { display: none; animation: fadeIn 0.4s ease-in-out; }
-        .view-section.active { display: block; }
-
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* --- Terminal Home --- */
-        .terminal-window {
-            background: var(--terminal-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-            padding: 20px;
-            font-family: var(--font-mono);
-            box-shadow: 0 0 20px rgba(0,0,0,0.5);
-            max-width: 800px;
-            margin: 0 auto;
-        }
-        .cmd-line { color: var(--accent-green); margin-bottom: 10px; }
-        .cmd-output { color: #ccc; white-space: pre-wrap; }
-
-        /* --- Blog Grid --- */
-        .blog-controls {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            margin-bottom: 25px;
-            padding: 15px;
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-        }
-
-        .search-box {
-            flex: 1;
-            min-width: 200px;
-            padding: 10px;
-            background: #000;
-            border: 1px solid var(--border-color);
-            color: var(--accent-green);
-            font-family: var(--font-mono);
-        }
-        .search-box:focus { outline: none; border-color: var(--accent-green); }
-
-        .filter-btn {
-            background: transparent;
-            border: 1px solid var(--border-color);
-            color: #888;
-            padding: 8px 12px;
-            cursor: pointer;
-            font-family: var(--font-mono);
-            font-size: 0.9rem;
-        }
-        .filter-btn:hover, .filter-btn.active {
-            border-color: var(--accent-green);
-            color: var(--accent-green);
-        }
-
-        .blog-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 20px;
-        }
-
-        .blog-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            padding: 20px;
-            cursor: pointer;
-            transition: transform 0.2s, border-color 0.2s;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .blog-card:hover {
-            transform: translateY(-5px);
-            border-color: var(--accent-green);
-            box-shadow: 0 5px 15px rgba(0, 255, 65, 0.1);
-        }
-
-        .blog-card::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; width: 3px; height: 100%;
-            background: var(--accent-dim);
-        }
-        .blog-card:hover::before { background: var(--accent-green); }
-
-        .card-meta { font-size: 0.8rem; color: #666; font-family: var(--font-mono); margin-bottom: 10px; display: flex; justify-content: space-between; }
-        .card-title { font-size: 1.2rem; color: var(--text-main); margin-bottom: 10px; font-weight: bold; }
-        .card-excerpt { color: #aaa; font-size: 0.95rem; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-        .card-tags { margin-top: 15px; display: flex; flex-wrap: wrap; gap: 5px; }
-        .tag { font-size: 0.75rem; background: #222; padding: 2px 6px; border-radius: 2px; color: var(--accent-dim); font-family: var(--font-mono); }
-
-        /* --- Pagination --- */
-        .pagination {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 15px;
-            margin-top: 30px;
-            font-family: var(--font-mono);
-        }
-        .page-btn {
-            background: transparent;
-            border: 1px solid var(--border-color);
-            color: var(--text-main);
-            padding: 5px 15px;
-            cursor: pointer;
-        }
-        .page-btn:disabled { opacity: 0.3; cursor: not-allowed; }
-        .page-info { color: var(--accent-green); }
-
-        /* --- Single Post View --- */
-        .post-viewer {
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            padding: 40px;
-            max-width: 900px;
-            margin: 0 auto;
-        }
-        .post-header { border-bottom: 1px solid var(--border-color); padding-bottom: 20px; margin-bottom: 20px; }
-        .post-title { font-size: 2.5rem; margin-bottom: 10px; color: var(--accent-green); }
-        .post-meta { color: #666; font-family: var(--font-mono); font-size: 0.9rem; }
-        .post-content { font-size: 1.1rem; line-height: 1.8; color: #ddd; }
-        .post-content p { margin-bottom: 1.5rem; }
-        .back-btn {
-            display: inline-block;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 15px;
             margin-bottom: 20px;
-            color: var(--accent-dim);
-            text-decoration: none;
-            cursor: pointer;
-            font-family: var(--font-mono);
         }
-        .back-btn:hover { color: var(--accent-green); }
 
-        /* --- Admin Modal --- */
-        .modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.85);
-            backdrop-filter: blur(5px);
-            display: none;
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            flex: 1;
+        }
+
+        .panel {
+            border: 1px solid var(--border-color);
+            background: rgba(20, 20, 20, 0.5);
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+        }
+        .panel-title {
+            color: var(--primary-color);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 8px;
+            margin-bottom: 15px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .input-group { position: relative; margin-bottom: 15px; }
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            background: #000;
+            border: 1px solid var(--primary-dim);
+            color: var(--primary-color);
+            padding: 12px;
+            font-family: var(--font-mono);
+            font-size: 1.1rem;
+            outline: none;
+        }
+        input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 5px var(--primary-dim);
+        }
+        .char-breakdown {
+            display: flex;
+            gap: 10px;
+            margin-top: 8px;
+            font-size: 0.8rem;
+            flex-wrap: wrap;
+        }
+        .char-stat {
+            padding: 2px 6px;
+            border: 1px solid #333;
+            border-radius: 2px;
+        }
+        .char-stat.active {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .control-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .slider-container { width: 100%; margin: 15px 0; }
+        input[type="range"] { width: 100%; accent-color: var(--primary-color); }
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            user-select: none;
+        }
+        input[type="checkbox"] { accent-color: var(--primary-color); }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            border-bottom: 1px dashed #333;
+            padding-bottom: 4px;
+        }
+        .stat-value { font-weight: bold; color: var(--primary-color); }
+        .strength-bar {
+            height: 6px;
+            background: #333;
+            margin-top: 10px;
+            position: relative;
+        }
+        .strength-fill {
+            height: 100%;
+            width: 0%;
+            background: var(--alert-color);
+            transition: width 0.3s, background 0.3s;
+        }
+
+        .heatmap-container {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 2px;
+            margin-top: 10px;
+        }
+        .heat-cell {
+            aspect-ratio: 1;
+            background: #111;
+            border: 1px solid #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            color: #555;
+        }
+        .heat-cell.active {
+            background: var(--primary-dim);
+            color: #fff;
+            border-color: var(--primary-color);
+        }
+
+        .hash-output {
+            word-break: break-all;
+            background: #000;
+            padding: 10px;
+            border: 1px solid #333;
+            margin-bottom: 10px;
+            font-size: 0.85rem;
+            color: #aaa;
+        }
+        .action-buttons { display: flex; gap: 10px; }
+
+        .history-list {
+            list-style: none;
+            max-height: 200px;
+            overflow-y: auto;
+            font-size: 0.85rem;
+        }
+        .history-item {
+            padding: 5px;
+            border-bottom: 1px solid #222;
+            display: flex;
+            justify-content: space-between;
+        }
+        .history-item:hover { background: #111; cursor: pointer; }
+
+        footer {
+            border-top: 1px solid var(--border-color);
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8rem;
+            color: #666;
+            margin-top: auto;
+        }
+        .footer-links span {
+            margin: 0 10px;
+            cursor: pointer;
+            color: var(--primary-dim);
+        }
+        .footer-links span:hover {
+            color: var(--primary-color);
+            text-decoration: underline;
+        }
+        .sys-trigger { cursor: pointer; user-select: none; }
+
+        #panic-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #000;
+            z-index: 9999;
+            display: flex;
             justify-content: center;
             align-items: center;
-            z-index: 1000;
+            flex-direction: column;
+        }
+        #panic-overlay h1 {
+            color: var(--alert-color);
+            font-size: 3rem;
+            animation: blink 0.5s infinite;
+        }
+
+        .modal {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 200;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
         .modal-content {
             background: var(--terminal-bg);
-            border: 1px solid var(--accent-green);
-            padding: 30px;
+            border: 2px solid var(--primary-color);
+            padding: 20px;
             width: 90%;
             max-width: 600px;
-            box-shadow: 0 0 30px rgba(0, 255, 65, 0.2);
-            max-height: 90vh;
+            max-height: 80vh;
             overflow-y: auto;
         }
-        .modal-header { display: flex; justify-content: space-between; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 10px; }
-        .close-modal { background: none; border: none; color: var(--error-red); font-size: 1.5rem; cursor: pointer; }
-        
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; color: var(--accent-green); font-family: var(--font-mono); margin-bottom: 5px; font-size: 0.9rem; }
-        .form-control {
-            width: 100%; padding: 10px; background: #000; border: 1px solid #333;
-            color: #fff; font-family: var(--font-sans);
-        }
-        .form-control:focus { outline: none; border-color: var(--accent-green); }
-        textarea.form-control { min-height: 150px; resize: vertical; font-family: var(--font-mono); }
-
-        .btn-primary {
-            background: var(--accent-dim); color: #000; border: none;
-            padding: 10px 20px; font-weight: bold; cursor: pointer;
-            font-family: var(--font-mono); width: 100%;
-        }
-        .btn-primary:hover { background: var(--accent-green); }
-        
-        .admin-list { margin-top: 20px; border-top: 1px solid #333; padding-top: 20px; }
-        .admin-item {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 10px; border-bottom: 1px solid #222;
-        }
-        .btn-delete {
-            background: transparent; border: 1px solid var(--error-red);
-            color: var(--error-red); padding: 5px 10px; cursor: pointer; font-size: 0.8rem;
-        }
-        .btn-delete:hover { background: var(--error-red); color: #000; }
-
-        /* --- Footer --- */
-        footer {
-            margin-top: auto;
-            border-top: 1px solid var(--border-color);
-            background: #050505;
-            padding: 20px 0;
-        }
-        .footer-content {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
+        .modal-header {
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 15px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--primary-dim);
+            padding-bottom: 10px;
         }
-        .footer-brand { font-family: var(--font-mono); color: var(--accent-green); font-weight: bold; }
-        .footer-status { display: flex; gap: 15px; font-size: 0.8rem; color: #666; font-family: var(--font-mono); }
-        .status-dot { height: 8px; width: 8px; background: var(--accent-green); border-radius: 50%; display: inline-block; margin-right: 5px; }
-        .footer-nav button {
-            background: none; border: none; color: #888; cursor: pointer;
-            font-family: var(--font-mono); font-size: 0.85rem; margin-left: 15px;
+        .admin-form input, .admin-form textarea, .admin-form select {
+            width: 100%;
+            background: #000;
+            border: 1px solid var(--primary-dim);
+            color: var(--text-color);
+            padding: 8px;
+            margin-bottom: 10px;
+            font-family: var(--font-mono);
         }
-        .footer-nav button:hover { color: var(--accent-green); text-decoration: underline; }
-        .sys-trigger { opacity: 0.3; cursor: default; }
-        .sys-trigger:hover { opacity: 1; color: var(--error-red); }
+        .admin-form textarea { height: 150px; resize: vertical; }
+        .post-list-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px;
+            border-bottom: 1px solid #333;
+        }
+        .post-list-item button { padding: 2px 8px; font-size: 0.7rem; }
 
-        /* Responsive */
         @media (max-width: 768px) {
-            .footer-content { flex-direction: column; text-align: center; }
-            .footer-status { justify-content: center; }
-            .footer-nav button { margin: 0 10px; }
-            .post-title { font-size: 1.8rem; }
+            .dashboard-grid { grid-template-columns: 1fr; }
+            header { flex-direction: column; gap: 10px; text-align: center; }
+            .footer-left, .footer-right { display: none; }
+            .footer-center { width: 100%; text-align: center; }
         }
     </style>
 </head>
 <body>
 
-    <!-- Header -->
-    <header class="container">
-        <h1>Password Master <span style="font-size:0.6em; color:#666;">// SEC_EDU</span></h1>
-        <nav class="nav-links">
-            <button onclick="app.navigate('home')" id="nav-home">Terminal</button>
-            <button onclick="app.navigate('blog')" id="nav-blog" class="active">Education</button>
-        </nav>
-    </header>
+    <div id="panic-overlay" class="hidden">
+        <h1>SYSTEM PURGED</h1>
+        <p class="text-green">Press F5 to Reboot</p>
+    </div>
 
-    <!-- Main Content -->
-    <main class="container">
-        
-        <!-- View: Home (Terminal) -->
-        <section id="view-home" class="view-section active">
-            <div class="terminal-window">
-                <div class="cmd-line">root@password-master:~$ ./init_security_protocol.sh</div>
-                <div class="cmd-output">
-Loading kernel modules... [OK]
-Initializing encryption layers... [OK]
-Mounting secure filesystem... [OK]
-
-Welcome to Password Master v2.0.
-System Status: SECURE
-Client-Side Execution: ACTIVE
-Data Logging: DISABLED
-
-Type 'help' for available commands or navigate to 'Education' to view security briefings.
-                </div>
-                <div class="cmd-line" style="margin-top:15px;">root@password-master:~$ <span style="animation: blink 1s infinite">_</span></div>
+    <div id="terminal-screen">
+        <div class="terminal-content">
+            <div class="terminal-header">
+                <span class="text-green">PASSWORD MASTER // SEC_EDU</span>
+                <span>v2.0.4</span>
             </div>
-        </section>
-
-        <!-- View: Blog List -->
-        <section id="view-blog" class="view-section">
-            <div class="blog-controls">
-                <input type="text" id="search-input" class="search-box" placeholder="Search titles or tags..." onkeyup="app.handleSearch()">
-                <div style="display:flex; gap:5px; flex-wrap:wrap;">
-                    <button class="filter-btn active" onclick="app.filterCategory('All')">All</button>
-                    <button class="filter-btn" onclick="app.filterCategory('Passwords')">Passwords</button>
-                    <button class="filter-btn" onclick="app.filterCategory('Phishing')">Phishing</button>
-                    <button class="filter-btn" onclick="app.filterCategory('Privacy')">Privacy</button>
-                    <button class="filter-btn" onclick="app.filterCategory('2FA')">2FA</button>
-                </div>
-            </div>
-
-            <div id="blog-grid" class="blog-grid">
-                <!-- Posts injected here -->
-            </div>
-
-            <div class="pagination">
-                <button class="page-btn" id="prev-btn" onclick="app.changePage(-1)">« PREV</button>
-                <span class="page-info" id="page-indicator">Page 1 of 1</span>
-                <button class="page-btn" id="next-btn" onclick="app.changePage(1)">NEXT »</button>
-            </div>
-        </section>
-
-        <!-- View: Single Post -->
-        <section id="view-post" class="view-section">
-            <div class="post-viewer">
-                <div class="back-btn" onclick="app.navigate('blog')">← BACK TO ARCHIVES</div>
-                <div class="post-header">
-                    <h2 class="post-title" id="single-title">Title</h2>
-                    <div class="post-meta">
-                        <span id="single-date">Date</span> | 
-                        <span id="single-category">Category</span> | 
-                        <span id="single-tags">Tags</span>
-                    </div>
-                </div>
-                <div class="post-content" id="single-content">
-                    <!-- Content injected here -->
-                </div>
-            </div>
-        </section>
-
-    </main>
-
-    <!-- Admin Modal -->
-    <div id="admin-modal" class="modal-overlay">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>// ADMIN_CONSOLE_ACCESS</h3>
-                <button class="close-modal" onclick="app.toggleAdmin(false)">×</button>
-            </div>
-            
-            <div class="form-group">
-                <label>TITLE</label>
-                <input type="text" id="admin-title" class="form-control" placeholder="Enter post title">
-            </div>
-            <div class="form-group">
-                <label>CATEGORY</label>
-                <select id="admin-category" class="form-control">
-                    <option value="Security">Security</option>
-                    <option value="Passwords">Passwords</option>
-                    <option value="Phishing">Phishing</option>
-                    <option value="Privacy">Privacy</option>
-                    <option value="2FA">2FA</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>TAGS (comma separated)</label>
-                <input type="text" id="admin-tags" class="form-control" placeholder="e.g. entropy, hack, protection">
-            </div>
-            <div class="form-group">
-                <label>CONTENT (Markdown supported)</label>
-                <textarea id="admin-content" class="form-control" placeholder="Write your security briefing..."></textarea>
-            </div>
-            <button class="btn-primary" onclick="app.createPost()">UPLOAD POST TO SYSTEM</button>
-
-            <div class="admin-list">
-                <h4 style="color:#666; margin-bottom:10px; font-family:var(--font-mono);">EXISTING DATABASE</h4>
-                <div id="admin-post-list">
-                    <!-- List items injected here -->
-                </div>
+            <div id="terminal-log"></div>
+            <div id="launch-btn-container">
+                <button class="btn" onclick="launchTool()">[ INITIALIZE TOOL ]</button>
+                <p style="margin-top: 10px; font-size: 0.8rem; color: #666;">Auto-launch in <span id="countdown">10</span>s...</p>
             </div>
         </div>
     </div>
 
-    <!-- Footer -->
-    <footer>
-        <div class="footer-content">
-            <div class="footer-brand">PASSWORD MASTER © 2024</div>
-            <div class="footer-status">
-                <span><span class="status-dot"></span>SECURE CONNECTION</span>
-                <span><span class="status-dot"></span>CLIENT-SIDE ONLY</span>
-                <span><span class="status-dot"></span>NO DATA STORAGE</span>
+    <div id="tool-screen" class="hidden">
+        <header>
+            <div>
+                <h1 class="text-green">PASSWORD_MASTER<span class="cursor"></span></h1>
+                <small>SECURE CLIENT-SIDE ENVIRONMENT</small>
             </div>
-            <div class="footer-nav">
-                <button onclick="app.navigate('home')">TERMINAL</button>
-                <button onclick="app.navigate('blog')">EDUCATION</button>
-                <button class="sys-trigger" id="sys-trigger" onclick="app.handleSysClick()">[SYS]</button>
+            <div>
+                <button class="btn" onclick="showEducation()">EDUCATION HUB</button>
+                <button class="btn btn-danger" onclick="triggerPanic()">PANIC (ESC)</button>
+            </div>
+        </header>
+
+        <div class="dashboard-grid">
+            <div class="panel">
+                <div class="panel-title">01. Password Analysis</div>
+                <div class="input-group">
+                    <input type="text" id="password-input" placeholder="Enter password to analyze..." autocomplete="off">
+                    <div class="char-breakdown">
+                        <span class="char-stat" id="stat-len">Len: 0</span>
+                        <span class="char-stat" id="stat-low">abc</span>
+                        <span class="char-stat" id="stat-up">ABC</span>
+                        <span class="char-stat" id="stat-num">123</span>
+                        <span class="char-stat" id="stat-sym">@#$</span>
+                    </div>
+                </div>
+                
+                <div class="stat-row"><span>Entropy:</span><span class="stat-value" id="entropy-val">0 bits</span></div>
+                <div class="stat-row"><span>Brute Force Time:</span><span class="stat-value" id="crack-time">Instant</span></div>
+                <div class="stat-row"><span>Attack Speed:</span><span class="stat-value">100 B/s (Est)</span></div>
+                
+                <div style="margin-top: 10px; font-size: 0.8rem;">Strength:</div>
+                <div class="strength-bar"><div class="strength-fill" id="strength-fill"></div></div>
+                <div id="strength-text" style="text-align: right; font-size: 0.8rem; margin-top: 5px;" class="text-red">WEAK</div>
+
+                <div class="heatmap-container" id="heatmap"></div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-title">02. Generators</div>
+                
+                <div style="margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 15px;">
+                    <div class="control-row">
+                        <label class="checkbox-label"><input type="checkbox" id="gen-upper" checked> Uppercase</label>
+                        <label class="checkbox-label"><input type="checkbox" id="gen-lower" checked> Lowercase</label>
+                    </div>
+                    <div class="control-row">
+                        <label class="checkbox-label"><input type="checkbox" id="gen-num" checked> Numbers</label>
+                        <label class="checkbox-label"><input type="checkbox" id="gen-sym" checked> Symbols</label>
+                    </div>
+                    <div class="slider-container">
+                        <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                            <span>Length</span>
+                            <span id="gen-len-val" class="text-green">16</span>
+                        </div>
+                        <input type="range" id="gen-len" min="4" max="64" value="16">
+                    </div>
+                    <button class="btn" style="width:100%" onclick="generatePassword()">GENERATE PASSWORD</button>
+                </div>
+
+                <div>
+                    <div class="control-row">
+                        <span>Passphrase Words:</span>
+                        <span id="phrase-count" class="text-green">5</span>
+                    </div>
+                    <input type="range" id="phrase-len" min="3" max="10" value="5" style="margin-bottom:10px">
+                    <button class="btn" style="width:100%" onclick="generatePassphrase()">GENERATE PASSPHRASE</button>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-title">03. Cryptography & Leak Check</div>
+                <div style="margin-bottom: 15px;">
+                    <label style="font-size:0.8rem; color:#888;">SHA-256 Hash</label>
+                    <div class="hash-output" id="hash-output">Waiting for input...</div>
+                    <button class="btn" style="padding: 4px 8px; font-size: 0.8rem;" onclick="copyHash()">COPY HASH</button>
+                </div>
+                
+                <div style="border-top: 1px solid #333; padding-top: 15px;">
+                    <label style="font-size:0.8rem; color:#888;">Have I Been Pwned? (K-Anonymity)</label>
+                    <p style="font-size: 0.7rem; color: #666; margin-bottom: 10px;">Only the first 5 chars of the hash are sent to the API.</p>
+                    <button class="btn btn-danger" id="hibp-btn" onclick="checkHIBP()">CHECK LEAKS</button>
+                    <div id="hibp-result" style="margin-top: 10px; font-weight: bold;"></div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-title">04. Session History (RAM Only)</div>
+                <ul class="history-list" id="history-list">
+                    <li style="color:#666; text-align:center; padding:10px;">No history in current session</li>
+                </ul>
+                <button class="btn btn-danger" style="margin-top: auto;" onclick="clearHistory()">PURGE HISTORY</button>
             </div>
         </div>
-    </footer>
+
+        <footer>
+            <div class="footer-left">
+                <span class="text-green">● SECURE CONNECTION</span>
+            </div>
+            <div class="footer-center footer-links">
+                <span onclick="location.reload()">TERMINAL</span> | 
+                <span onclick="showEducation()">EDUCATION</span> | 
+                <span class="sys-trigger" id="sys-trigger">[SYS]</span>
+            </div>
+            <div class="footer-right">
+                v2.0.4 | NO LOGS
+            </div>
+        </footer>
+    </div>
+
+    <div id="education-screen" class="hidden" style="position:fixed; top:0; left:0; width:100%; height:100%; background:var(--bg-color); z-index:150; overflow-y:auto; padding:20px;">
+        <div style="max-width:1200px; margin:0 auto;">
+            <header style="border:none;">
+                <h1 class="text-green">SECURITY EDUCATION HUB</h1>
+                <button class="btn" onclick="closeEducation()">BACK TO TOOL</button>
+            </header>
+            
+            <div style="display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap;">
+                <input type="text" id="blog-search" placeholder="Search by title or tags..." style="flex:1; max-width:400px;" onkeyup="renderBlogPosts()">
+                <select id="blog-filter" onchange="renderBlogPosts()" style="background:#000; color:var(--primary-color); border:1px solid var(--primary-dim); padding:8px; font-family:var(--font-mono);">
+                    <option value="All">All Categories</option>
+                    <option value="Security">Security</option>
+                    <option value="Passwords">Passwords</option>
+                    <option value="Phishing">Phishing</option>
+                    <option value="Privacy">Privacy</option>
+                </select>
+            </div>
+
+            <div id="blog-grid" class="dashboard-grid"></div>
+            
+            <div style="margin-top:20px; display:flex; justify-content:center; gap:10px; align-items:center;">
+                <button class="btn" id="prev-page" onclick="changePage(-1)">PREV</button>
+                <span id="page-indicator" class="text-green">Page 1 of 1</span>
+                <button class="btn" id="next-page" onclick="changePage(1)">NEXT</button>
+            </div>
+        </div>
+        <footer style="position:fixed; bottom:0; width:100%; border-top:1px solid var(--border-color); background:var(--bg-color);">
+             <div class="footer-center footer-links">
+                <span onclick="closeEducation()">BACK TO TOOL</span> | 
+                <span class="sys-trigger" id="edu-sys-trigger">[SYS]</span>
+            </div>
+        </footer>
+    </div>
+
+    <div id="reader-modal" class="hidden modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="reader-title" class="text-green"></h2>
+                <button class="btn btn-danger" onclick="closeReader()">X</button>
+            </div>
+            <div id="reader-meta" style="margin-bottom:15px; font-size:0.8rem; color:#888;"></div>
+            <div id="reader-body" style="line-height:1.6; white-space:pre-wrap;"></div>
+        </div>
+    </div>
+
+    <div id="admin-modal" class="hidden modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="text-green">ADMIN CONSOLE</h2>
+                <button class="btn btn-danger" onclick="closeAdmin()">X</button>
+            </div>
+            <div style="margin-bottom:20px;">
+                <h3 class="text-yellow">Create New Post</h3>
+                <div class="admin-form">
+                    <input type="text" id="admin-title" placeholder="Title">
+                    <select id="admin-category">
+                        <option value="Security">Security</option>
+                        <option value="Passwords">Passwords</option>
+                        <option value="Phishing">Phishing</option>
+                        <option value="Privacy">Privacy</option>
+                    </select>
+                    <input type="text" id="admin-tags" placeholder="Tags (comma separated)">
+                    <textarea id="admin-content" placeholder="Content..."></textarea>
+                    <button class="btn" onclick="addPost()">PUBLISH POST</button>
+                </div>
+            </div>
+            <div>
+                <h3 class="text-yellow">Manage Posts</h3>
+                <div id="admin-post-list"></div>
+            </div>
+        </div>
+    </div>
 
     <script>
-        const app = {
-            data: {
-                posts: [],
-                currentPage: 1,
-                itemsPerPage: 6,
-                currentFilter: 'All',
-                searchQuery: '',
-                sysClickCount: 0,
-                sysClickTimer: null
-            },
+        const terminalLog = document.getElementById('terminal-log');
+        const lines = [
+            "Loading kernel modules... [OK]",
+            "Initializing encryption layers... [OK]",
+            "Mounting secure filesystem... [OK]",
+            "",
+            "Welcome to Password Master v2.0.",
+            "System Status: SECURE",
+            "Client-Side Execution: ACTIVE",
+            "Data Logging: DISABLED",
+            "",
+            "Type 'help' for available commands or navigate to 'Education' to view security briefings."
+        ];
 
-            init() {
-                this.loadPosts();
-                if (this.data.posts.length === 0) {
-                    this.seedData();
-                }
-                this.renderBlog();
-                this.setupEventListeners();
-            },
-
-            seedData() {
-                const seeds = [
-                    {
-                        id: 1, title: "Understanding Password Entropy", category: "Passwords",
-                        tags: ["math", "security", "strength"], date: "2024-05-12",
-                        content: "Password entropy is a measurement of how unpredictable a password is. It refers to how many guesses an attacker would need, on average, to crack your password. The higher the entropy, the stronger the password.\n\n**Formula:** E = L * log2(N)\nWhere L is length and N is the size of the character set.\n\nTo maximize entropy, increase length first, then complexity."
-                    },
-                    {
-                        id: 2, title: "Identifying Spear Phishing", category: "Phishing",
-                        tags: ["email", "social-engineering", "attack"], date: "2024-05-15",
-                        content: "Unlike generic phishing, spear phishing targets specific individuals or organizations. Attackers gather personal information to make the message seem legitimate.\n\n**Red Flags:**\n1. Urgency or threats.\n2. Mismatched sender domains.\n3. Requests for sensitive data.\n4. Unexpected attachments."
-                    },
-                    {
-                        id: 3, title: "Why You Need 2FA", category: "2FA",
-                        tags: ["authentication", "login", "protection"], date: "2024-06-01",
-                        content: "Two-Factor Authentication adds a critical layer of security. Even if your password is compromised, the attacker cannot access your account without the second factor (usually a time-based code or hardware key).\n\nAlways prefer TOTP apps (like Authy or Google Authenticator) over SMS, as SMS can be intercepted via SIM swapping."
-                    },
-                    {
-                        id: 4, title: "The Danger of Public Wi-Fi", category: "Privacy",
-                        tags: ["network", "wifi", "man-in-the-middle"], date: "2024-06-10",
-                        content: "Public Wi-Fi networks are often unencrypted. This allows attackers on the same network to intercept your traffic (Man-in-the-Middle attacks).\n\n**Safety Tips:**\n- Use a VPN always.\n- Avoid accessing banking sites.\n- Ensure 'HTTPS' is present on websites."
-                    },
-                    {
-                        id: 5, title: "Passphrases vs Passwords", category: "Passwords",
-                        tags: ["memory", "length", "strategy"], date: "2024-06-15",
-                        content: "A passphrase is a sequence of words or other text used to control access. 'Correct Horse Battery Staple' is a famous example.\n\nPassphrases are generally easier to remember and harder to crack via brute force due to their length, even if they use only lowercase letters."
-                    },
-                    {
-                        id: 6, title: "Zero Trust Architecture", category: "Security",
-                        tags: ["enterprise", "network", "zero-trust"], date: "2024-07-01",
-                        content: "Zero Trust is a security concept centered on the belief that organizations should not automatically trust anything inside or outside its perimeters.\n\nPrinciple: 'Never Trust, Always Verify.' Every access request must be authenticated, authorized, and encrypted."
-                    },
-                    {
-                        id: 7, title: "Recognizing Clone Phishing", category: "Phishing",
-                        tags: ["email", "clone", "fraud"], date: "2024-07-05",
-                        content: "Clone phishing involves creating a nearly identical replica of a legitimate email you previously received. The attacker replaces the original attachment or link with a malicious one.\n\nAlways verify the sender and hover over links before clicking, even if the email looks familiar."
-                    },
-                    {
-                        id: 8, title: "Digital Footprint Management", category: "Privacy",
-                        tags: ["data", "tracking", "cleanup"], date: "2024-07-12",
-                        content: "Your digital footprint is the trail of data you leave behind while using the internet. To minimize it:\n1. Delete unused accounts.\n2. Use privacy-focused browsers.\n3. Opt-out of data broker sites.\n4. Limit social media sharing."
-                    }
-                ];
-                this.data.posts = seeds;
-                this.savePosts();
-            },
-
-            loadPosts() {
-                const stored = localStorage.getItem('pm_posts');
-                if (stored) {
-                    this.data.posts = JSON.parse(stored);
-                }
-            },
-
-            savePosts() {
-                localStorage.setItem('pm_posts', JSON.stringify(this.data.posts));
-                this.renderBlog();
-                this.renderAdminList();
-            },
-
-            createPost() {
-                const title = document.getElementById('admin-title').value;
-                const category = document.getElementById('admin-category').value;
-                const tags = document.getElementById('admin-tags').value;
-                const content = document.getElementById('admin-content').value;
-
-                if (!title || !content) {
-                    alert("Title and Content are required.");
-                    return;
-                }
-
-                const newPost = {
-                    id: Date.now(),
-                    title,
-                    category,
-                    tags: tags.split(',').map(t => t.trim()).filter(t => t),
-                    date: new Date().toISOString().split('T')[0],
-                    content
-                };
-
-                this.data.posts.unshift(newPost); // Add to top
-                this.savePosts();
-                
-                // Reset form
-                document.getElementById('admin-title').value = '';
-                document.getElementById('admin-tags').value = '';
-                document.getElementById('admin-content').value = '';
-                
-                alert("Post uploaded successfully.");
-            },
-
-            deletePost(id) {
-                if(confirm("CONFIRM DELETE? This action is irreversible.")) {
-                    this.data.posts = this.data.posts.filter(p => p.id !== id);
-                    this.savePosts();
-                }
-            },
-
-            navigate(view) {
-                document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
-                document.querySelectorAll('.nav-links button').forEach(el => el.classList.remove('active'));
-                
-                document.getElementById(`view-${view}`).classList.add('active');
-                
-                if (view === 'blog') {
-                    document.getElementById('nav-blog').classList.add('active');
-                    this.renderBlog();
-                } else if (view === 'home') {
-                    document.getElementById('nav-home').classList.add('active');
-                } else if (view === 'post') {
-                    // No nav highlight for single post
-                }
-                
-                window.scrollTo(0,0);
-            },
-
-            renderBlog() {
-                const grid = document.getElementById('blog-grid');
-                grid.innerHTML = '';
-
-                // Filter logic
-                let filtered = this.data.posts.filter(post => {
-                    const matchesCategory = this.data.currentFilter === 'All' || post.category === this.data.currentFilter;
-                    const searchLower = this.data.searchQuery.toLowerCase();
-                    const matchesSearch = post.title.toLowerCase().includes(searchLower) || 
-                                          post.tags.some(t => t.toLowerCase().includes(searchLower));
-                    return matchesCategory && matchesSearch;
-                });
-
-                // Pagination logic
-                const totalPages = Math.ceil(filtered.length / this.data.itemsPerPage) || 1;
-                if (this.data.currentPage > totalPages) this.data.currentPage = totalPages;
-                
-                const start = (this.data.currentPage - 1) * this.data.itemsPerPage;
-                const paginated = filtered.slice(start, start + this.data.itemsPerPage);
-
-                // Render Cards
-                if (paginated.length === 0) {
-                    grid.innerHTML = '<div style="grid-column: 1/-1; text-align:center; color:#666; padding:40px;">NO RECORDS FOUND IN DATABASE</div>';
+        let lineIndex = 0;
+        function typeLine() {
+            if (lineIndex < lines.length) {
+                const p = document.createElement('div');
+                p.className = 'log-line text-green';
+                if (lineIndex === lines.length - 1) {
+                    p.innerHTML = lines[lineIndex] + '<span class="cursor"></span>';
                 } else {
-                    paginated.forEach(post => {
-                        const card = document.createElement('div');
-                        card.className = 'blog-card';
-                        card.onclick = () => this.openPost(post.id);
-                        
-                        const tagsHtml = post.tags.map(t => `<span class="tag">#${t}</span>`).join('');
-                        
-                        card.innerHTML = `
-                            <div class="card-meta">
-                                <span>${post.date}</span>
-                                <span>[${post.category}]</span>
-                            </div>
-                            <div class="card-title">${this.escapeHtml(post.title)}</div>
-                            <div class="card-excerpt">${this.escapeHtml(post.content)}</div>
-                            <div class="card-tags">${tagsHtml}</div>
-                        `;
-                        grid.appendChild(card);
-                    });
+                    p.textContent = lines[lineIndex];
                 }
-
-                // Update Pagination UI
-                document.getElementById('page-indicator').textContent = `Page ${this.data.currentPage} of ${totalPages}`;
-                document.getElementById('prev-btn').disabled = this.data.currentPage === 1;
-                document.getElementById('next-btn').disabled = this.data.currentPage === totalPages;
-            },
-
-            openPost(id) {
-                const post = this.data.posts.find(p => p.id === id);
-                if (!post) return;
-
-                document.getElementById('single-title').textContent = post.title;
-                document.getElementById('single-date').textContent = post.date;
-                document.getElementById('single-category').textContent = post.category;
-                document.getElementById('single-tags').textContent = post.tags.join(', ');
-                
-                // Simple markdown-like formatting (newlines to paragraphs)
-                const formattedContent = post.content.split('\n').map(p => {
-                    if (p.startsWith('**') && p.endsWith('**')) return `<strong>${p.replace(/\*\*/g, '')}</strong>`;
-                    return `<p>${p}</p>`;
-                }).join('');
-                
-                document.getElementById('single-content').innerHTML = formattedContent;
-                this.navigate('post');
-            },
-
-            changePage(delta) {
-                this.data.currentPage += delta;
-                this.renderBlog();
-                window.scrollTo(0,0);
-            },
-
-            handleSearch() {
-                this.data.searchQuery = document.getElementById('search-input').value;
-                this.data.currentPage = 1;
-                this.renderBlog();
-            },
-
-            filterCategory(cat) {
-                this.data.currentFilter = cat;
-                this.data.currentPage = 1;
-                
-                // Update button styles
-                document.querySelectorAll('.filter-btn').forEach(btn => {
-                    btn.classList.toggle('active', btn.textContent === cat || (cat === 'All' && btn.textContent === 'All'));
-                });
-                
-                this.renderBlog();
-            },
-
-            toggleAdmin(show) {
-                const modal = document.getElementById('admin-modal');
-                modal.style.display = show ? 'flex' : 'none';
-                if (show) this.renderAdminList();
-            },
-
-            renderAdminList() {
-                const list = document.getElementById('admin-post-list');
-                list.innerHTML = '';
-                this.data.posts.forEach(post => {
-                    const item = document.createElement('div');
-                    item.className = 'admin-item';
-                    item.innerHTML = `
-                        <span style="font-family:var(--font-mono); font-size:0.9rem;">${post.title}</span>
-                        <button class="btn-delete" onclick="app.deletePost(${post.id})">DELETE</button>
-                    `;
-                    list.appendChild(item);
-                });
-            },
-
-            handleSysClick() {
-                this.data.sysClickCount++;
-                
-                clearTimeout(this.data.sysClickTimer);
-                this.data.sysClickTimer = setTimeout(() => {
-                    this.data.sysClickCount = 0;
-                }, 2000);
-
-                if (this.data.sysClickCount >= 5) {
-                    this.toggleAdmin(true);
-                    this.data.sysClickCount = 0;
-                }
-            },
-
-            escapeHtml(text) {
-                const div = document.createElement('div');
-                div.textContent = text;
-                return div.innerHTML;
-            },
-
-            setupEventListeners() {
-                // Close modal on outside click
-                document.getElementById('admin-modal').addEventListener('click', (e) => {
-                    if (e.target.id === 'admin-modal') this.toggleAdmin(false);
-                });
+                terminalLog.appendChild(p);
+                lineIndex++;
+                setTimeout(typeLine, 300);
+            } else {
+                const btnContainer = document.getElementById('launch-btn-container');
+                btnContainer.style.opacity = 1;
+                startCountdown();
             }
-        };
+        }
 
-        // Initialize App
-        document.addEventListener('DOMContentLoaded', () => {
-            app.init();
+        let countdownVal = 10;
+        function startCountdown() {
+            const timer = setInterval(() => {
+                countdownVal--;
+                document.getElementById('countdown').textContent = countdownVal;
+                if (countdownVal <= 0) {
+                    clearInterval(timer);
+                    launchTool();
+                }
+            }, 1000);
+        }
+
+        function launchTool() {
+            document.getElementById('terminal-screen').classList.add('hidden');
+            document.getElementById('tool-screen').classList.remove('hidden');
+            initHeatmap();
+            updateStats();
+        }
+
+        const passwordInput = document.getElementById('password-input');
+        const genLenSlider = document.getElementById('gen-len');
+        const genLenVal = document.getElementById('gen-len-val');
+        const phraseLenSlider = document.getElementById('phrase-len');
+        const phraseCount = document.getElementById('phrase-count');
+        const historyList = document.getElementById('history-list');
+        let sessionHistory = [];
+        let sysClickCount = 0;
+        let lastSysClickTime = 0;
+
+        const commonWords = ["correct", "horse", "battery", "staple", "purple", "monkey", "dishwasher", "secure", "linux", "kernel", "crypto", "hash", "salt", "pepper", "quantum", "fiber", "neon", "cyber", "ghost", "shadow"];
+
+        function initHeatmap() {
+            const heatmap = document.getElementById('heatmap');
+            heatmap.innerHTML = '';
+            const labels = ['a-z', 'A-Z', '0-9', 'Sym', 'Len'];
+            labels.forEach(l => {
+                const cell = document.createElement('div');
+                cell.className = 'heat-cell';
+                cell.textContent = l;
+                cell.id = 'heat-' + l.replace(/[^a-zA-Z0-9]/g, '');
+                heatmap.appendChild(cell);
+            });
+        }
+
+        function updateHeatmap(hasLower, hasUpper, hasNum, hasSym, len) {
+            document.getElementById('heat-az').className = `heat-cell ${hasLower ? 'active' : ''}`;
+            document.getElementById('heat-AZ').className = `heat-cell ${hasUpper ? 'active' : ''}`;
+            document.getElementById('heat-09').className = `heat-cell ${hasNum ? 'active' : ''}`;
+            document.getElementById('heat-Sym').className = `heat-cell ${hasSym ? 'active' : ''}`;
+            
+            const lenCell = document.getElementById('heat-Len');
+            lenCell.className = `heat-cell ${len > 8 ? 'active' : ''}`;
+            if(len > 12) lenCell.style.background = 'var(--primary-color)';
+            else if(len > 8) lenCell.style.background = 'var(--warning-color)';
+            else lenCell.style.background = '#111';
+        }
+
+        function calculateEntropy(password) {
+            let pool = 0;
+            if (/[a-z]/.test(password)) pool += 26;
+            if (/[A-Z]/.test(password)) pool += 26;
+            if (/[0-9]/.test(password)) pool += 10;
+            if (/[^a-zA-Z0-9]/.test(password)) pool += 32;
+            if (pool === 0) return 0;
+            return Math.floor(password.length * Math.log2(pool));
+        }
+
+        function formatTime(seconds) {
+            if (seconds < 1) return "Instant";
+            if (seconds < 60) return Math.floor(seconds) + " seconds";
+            if (seconds < 3600) return Math.floor(seconds / 60) + " minutes";
+            if (seconds < 86400) return Math.floor(seconds / 3600) + " hours";
+            if (seconds < 2592000) return Math.floor(seconds / 86400) + " days";
+            if (seconds < 31536000) return Math.floor(seconds / 2592000) + " months";
+            if (seconds < 3153600000) return Math.floor(seconds / 31536000) + " years";
+            if (seconds < 315360000000) return Math.floor(seconds / 3153600000) + " centuries";
+            return "Forever";
+        }
+
+        function updateStats() {
+            const pwd = passwordInput.value;
+            const len = pwd.length;
+            const hasLower = /[a-z]/.test(pwd);
+            const hasUpper = /[A-Z]/.test(pwd);
+            const hasNum = /[0-9]/.test(pwd);
+            const hasSym = /[^a-zA-Z0-9]/.test(pwd);
+
+            document.getElementById('stat-len').textContent = `Len: ${len}`;
+            document.getElementById('stat-len').className = `char-stat ${len > 0 ? 'active' : ''}`;
+            document.getElementById('stat-low').className = `char-stat ${hasLower ? 'active' : ''}`;
+            document.getElementById('stat-up').className = `char-stat ${hasUpper ? 'active' : ''}`;
+            document.getElementById('stat-num').className = `char-stat ${hasNum ? 'active' : ''}`;
+            document.getElementById('stat-sym').className = `char-stat ${hasSym ? 'active' : ''}`;
+
+            updateHeatmap(hasLower, hasUpper, hasNum, hasSym, len);
+
+            const entropy = calculateEntropy(pwd);
+            document.getElementById('entropy-val').textContent = `${entropy} bits`;
+
+            const guessesPerSec = 100000000000; 
+            const seconds = Math.pow(2, entropy) / guessesPerSec;
+            document.getElementById('crack-time').textContent = formatTime(seconds);
+
+            const fill = document.getElementById('strength-fill');
+            const text = document.getElementById('strength-text');
+            let width = Math.min(100, (entropy / 128) * 100);
+            fill.style.width = `${width}%`;
+            
+            if (entropy < 40) {
+                fill.style.background = 'var(--alert-color)';
+                text.textContent = "WEAK";
+                text.className = "text-red";
+            } else if (entropy < 80) {
+                fill.style.background = 'var(--warning-color)';
+                text.textContent = "MODERATE";
+                text.className = "text-yellow";
+            } else {
+                fill.style.background = 'var(--primary-color)';
+                text.textContent = "STRONG";
+                text.className = "text-green";
+            }
+
+            if (pwd.length > 0) {
+                crypto.subtle.digest('SHA-256', new TextEncoder().encode(pwd)).then(buf => {
+                    const hash = Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+                    document.getElementById('hash-output').textContent = hash;
+                });
+                addToHistory(pwd);
+            } else {
+                document.getElementById('hash-output').textContent = "Waiting for input...";
+            }
+        }
+
+        function addToHistory(pwd) {
+            if (sessionHistory.length > 0 && sessionHistory[0] === pwd) return;
+            sessionHistory.unshift(pwd);
+            if (sessionHistory.length > 10) sessionHistory.pop();
+            renderHistory();
+        }
+
+        function renderHistory() {
+            historyList.innerHTML = '';
+            if (sessionHistory.length === 0) {
+                historyList.innerHTML = '<li style="color:#666; text-align:center; padding:10px;">No history in current session</li>';
+                return;
+            }
+            sessionHistory.forEach((pwd, index) => {
+                const li = document.createElement('li');
+                li.className = 'history-item';
+                li.innerHTML = `<span>${pwd.substring(0, 10)}${pwd.length > 10 ? '...' : ''}</span> <span class="text-green">${calculateEntropy(pwd)} bits</span>`;
+                li.onclick = () => {
+                    passwordInput.value = pwd;
+                    updateStats();
+                };
+                historyList.appendChild(li);
+            });
+        }
+
+        function clearHistory() {
+            sessionHistory = [];
+            renderHistory();
+        }
+
+        function generatePassword() {
+            const len = parseInt(genLenSlider.value);
+            const useUpper = document.getElementById('gen-upper').checked;
+            const useLower = document.getElementById('gen-lower').checked;
+            const useNum = document.getElementById('gen-num').checked;
+            const useSym = document.getElementById('gen-sym').checked;
+
+            const upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+            const lower = "abcdefghijklmnopqrstuvwxyz";
+            const num = "0123456789";
+            const sym = "!@#$%^&*()_+~`|}{[]:;?><,./-=";
+
+            let charset = "";
+            if (useLower) charset += lower;
+            if (useUpper) charset += upper;
+            if (useNum) charset += num;
+            if (useSym) charset += sym;
+
+            if (charset === "") {
+                alert("Select at least one character type!");
+                return;
+            }
+
+            let pwd = "";
+            const array = new Uint32Array(len);
+            crypto.getRandomValues(array);
+            for (let i = 0; i < len; i++) {
+                pwd += charset[array[i] % charset.length];
+            }
+            passwordInput.value = pwd;
+            updateStats();
+        }
+
+        function generatePassphrase() {
+            const count = parseInt(phraseLenSlider.value);
+            let phrase = [];
+            const array = new Uint32Array(count);
+            crypto.getRandomValues(array);
+            for(let i=0; i<count; i++) {
+                phrase.push(commonWords[array[i] % commonWords.length]);
+            }
+            passwordInput.value = phrase.join("-");
+            updateStats();
+        }
+
+        async function checkHIBP() {
+            const pwd = passwordInput.value;
+            if (!pwd) return;
+            
+            const btn = document.getElementById('hibp-btn');
+            const resultDiv = document.getElementById('hibp-result');
+            
+            btn.textContent = "CHECKING...";
+            btn.disabled = true;
+
+            try {
+                const hash = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pwd));
+                const hashHex = Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('').toUpperCase();
+                const prefix = hashHex.substring(0, 5);
+                const suffix = hashHex.substring(5);
+
+                const response = await fetch(`https://api.pwnedpasswords.com/range/${prefix}`);
+                const data = await response.text();
+                
+                const lines = data.split('\n');
+                let found = false;
+                let count = 0;
+
+                for (let line of lines) {
+                    const [hashSuffix, leakCount] = line.split(':');
+                    if (hashSuffix.trim() === suffix) {
+                        found = true;
+                        count = leakCount.trim();
+                        break;
+                    }
+                }
+
+                if (found) {
+                    resultDiv.innerHTML = `<span class="text-red">COMPROMISED! Found ${parseInt(count).toLocaleString()} times.</span>`;
+                } else {
+                    resultDiv.innerHTML = `<span class="text-green">SAFE. No leaks found.</span>`;
+                }
+            } catch (e) {
+                resultDiv.innerHTML = `<span class="text-yellow">Error checking API.</span>`;
+            } finally {
+                btn.textContent = "CHECK LEAKS";
+                btn.disabled = false;
+            }
+        }
+
+        function copyHash() {
+            const hash = document.getElementById('hash-output').textContent;
+            if (hash !== "Waiting for input...") {
+                navigator.clipboard.writeText(hash);
+                alert("Hash copied to clipboard!");
+            }
+        }
+
+        function triggerPanic() {
+            document.getElementById('panic-overlay').classList.remove('hidden');
+            passwordInput.value = "";
+            updateStats();
+            clearHistory();
+            document.getElementById('hash-output').textContent = "PURGED";
+            document.getElementById('hibp-result').innerHTML = "";
+        }
+
+        passwordInput.addEventListener('input', updateStats);
+        genLenSlider.addEventListener('input', (e) => genLenVal.textContent = e.target.value);
+        phraseLenSlider.addEventListener('input', (e) => phraseCount.textContent = e.target.value);
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === "Escape") triggerPanic();
         });
+
+        let blogPosts = JSON.parse(localStorage.getItem('pm_blog_posts')) || [
+            {id: 1, title: "Understanding Entropy", category: "Passwords", tags: ["math", "security"], date: "2023-10-01", content: "Entropy measures the unpredictability of a password. Higher entropy means harder to crack."},
+            {id: 2, title: "Phishing Identification", category: "Phishing", tags: ["email", "scam"], date: "2023-10-05", content: "Always check the sender's domain. Hover over links before clicking."},
+            {id: 3, title: "2FA Best Practices", category: "Security", tags: ["2fa", "auth"], date: "2023-10-10", content: "Use hardware keys or authenticator apps. Avoid SMS 2FA if possible."},
+            {id: 4, title: "Password Managers", category: "Passwords", tags: ["tools", "storage"], date: "2023-10-15", content: "Never reuse passwords. Let a manager generate and store complex strings."},
+            {id: 5, title: "Public Wi-Fi Risks", category: "Privacy", tags: ["wifi", "network"], date: "2023-10-20", content: "Always use a VPN on public networks. Avoid logging into banks."},
+            {id: 6, title: "Social Engineering", category: "Security", tags: ["human", "hack"], date: "2023-10-25", content: "Hackers often hack humans, not machines. Be skeptical of urgent requests."},
+            {id: 7, title: "Hashing Explained", category: "Passwords", tags: ["crypto", "tech"], date: "2023-11-01", content: "Hashing turns data into a fixed string. It is one-way encryption."},
+            {id: 8, title: "Browser Privacy", category: "Privacy", tags: ["browser", "tracking"], date: "2023-11-05", content: "Use incognito mode and clear cookies regularly to reduce tracking."},
+            {id: 9, title: "Update Your Software", category: "Security", tags: ["patches", "os"], date: "2023-11-10", content: "Outdated software is the easiest entry point for malware."}
+        ];
+
+        let currentPage = 1;
+        const postsPerPage = 6;
+
+        function showEducation() {
+            document.getElementById('tool-screen').classList.add('hidden');
+            document.getElementById('education-screen').classList.remove('hidden');
+            renderBlogPosts();
+        }
+
+        function closeEducation() {
+            document.getElementById('education-screen').classList.add('hidden');
+            document.getElementById('tool-screen').classList.remove('hidden');
+        }
+
+        function renderBlogPosts() {
+            const search = document.getElementById('blog-search').value.toLowerCase();
+            const filter = document.getElementById('blog-filter').value;
+            const grid = document.getElementById('blog-grid');
+            grid.innerHTML = '';
+
+            let filtered = blogPosts.filter(post => {
+                const matchesSearch = post.title.toLowerCase().includes(search) || post.tags.some(t => t.toLowerCase().includes(search));
+                const matchesCat = filter === "All" || post.category === filter;
+                return matchesSearch && matchesCat;
+            });
+
+            const totalPages = Math.ceil(filtered.length / postsPerPage);
+            if (currentPage > totalPages) currentPage = totalPages || 1;
+            
+            const start = (currentPage - 1) * postsPerPage;
+            const end = start + postsPerPage;
+            const pageItems = filtered.slice(start, end);
+
+            pageItems.forEach(post => {
+                const card = document.createElement('div');
+                card.className = 'panel';
+                card.style.cursor = 'pointer';
+                card.onclick = () => openReader(post);
+                card.innerHTML = `
+                    <div class="panel-title">${post.category}</div>
+                    <h3 class="text-green" style="margin-bottom:10px;">${post.title}</h3>
+                    <p style="font-size:0.8rem; color:#888; margin-bottom:10px;">${post.date}</p>
+                    <p style="flex:1; font-size:0.9rem;">${post.content.substring(0, 80)}...</p>
+                    <div style="margin-top:10px; font-size:0.7rem; color:var(--primary-dim);">
+                        Tags: ${post.tags.join(', ')}
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+
+            document.getElementById('page-indicator').textContent = `Page ${currentPage} of ${totalPages || 1}`;
+            document.getElementById('prev-page').disabled = currentPage === 1;
+            document.getElementById('next-page').disabled = currentPage === totalPages;
+        }
+
+        function changePage(dir) {
+            currentPage += dir;
+            renderBlogPosts();
+        }
+
+        function openReader(post) {
+            document.getElementById('reader-title').textContent = post.title;
+            document.getElementById('reader-meta').textContent = `${post.date} | ${post.category} | Tags: ${post.tags.join(', ')}`;
+            document.getElementById('reader-body').textContent = post.content;
+            document.getElementById('reader-modal').classList.remove('hidden');
+        }
+
+        function closeReader() {
+            document.getElementById('reader-modal').classList.add('hidden');
+        }
+
+        function setupSysTrigger(id) {
+            const el = document.getElementById(id);
+            el.addEventListener('click', () => {
+                const now = Date.now();
+                if (now - lastSysClickTime < 500) {
+                    sysClickCount++;
+                } else {
+                    sysClickCount = 1;
+                }
+                lastSysClickTime = now;
+
+                if (sysClickCount >= 5) {
+                    openAdmin();
+                    sysClickCount = 0;
+                }
+            });
+        }
+
+        setupSysTrigger('sys-trigger');
+        setupSysTrigger('edu-sys-trigger');
+
+        function openAdmin() {
+            document.getElementById('admin-modal').classList.remove('hidden');
+            renderAdminList();
+        }
+
+        function closeAdmin() {
+            document.getElementById('admin-modal').classList.add('hidden');
+        }
+
+        function addPost() {
+            const title = document.getElementById('admin-title').value;
+            const cat = document.getElementById('admin-category').value;
+            const tags = document.getElementById('admin-tags').value.split(',').map(t => t.trim());
+            const content = document.getElementById('admin-content').value;
+
+            if (!title || !content) return alert("Title and Content required");
+
+            const newPost = {
+                id: Date.now(),
+                title,
+                category: cat,
+                tags,
+                content,
+                date: new Date().toISOString().split('T')[0]
+            };
+
+            blogPosts.unshift(newPost);
+            localStorage.setItem('pm_blog_posts', JSON.stringify(blogPosts));
+            
+            document.getElementById('admin-title').value = '';
+            document.getElementById('admin-tags').value = '';
+            document.getElementById('admin-content').value = '';
+            
+            renderAdminList();
+            alert("Post Published!");
+        }
+
+        function renderAdminList() {
+            const list = document.getElementById('admin-post-list');
+            list.innerHTML = '';
+            blogPosts.forEach(post => {
+                const div = document.createElement('div');
+                div.className = 'post-list-item';
+                div.innerHTML = `
+                    <span>${post.title}</span>
+                    <button class="btn btn-danger" onclick="deletePost(${post.id})">DELETE</button>
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        function deletePost(id) {
+            if(confirm("Delete this post?")) {
+                blogPosts = blogPosts.filter(p => p.id !== id);
+                localStorage.setItem('pm_blog_posts', JSON.stringify(blogPosts));
+                renderAdminList();
+            }
+        }
+
+        window.onload = typeLine;
     </script>
 </body>
 </html>
