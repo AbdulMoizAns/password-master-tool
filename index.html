@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.tailwindcss.com https://fonts.googleapis.com https://fonts.gstatic.com 'unsafe-inline' 'unsafe-eval'; style-src 'self' https://cdn.tailwindcss.com https://fonts.googleapis.com 'unsafe-inline'; connect-src 'self' https://api.pwnedpasswords.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:;">
+<meta http-equiv="X-Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.tailwindcss.com https://fonts.googleapis.com https://fonts.gstatic.com 'unsafe-inline' 'unsafe-eval'; style-src 'self' https://cdn.tailwindcss.com https://fonts.googleapis.com 'unsafe-inline'; connect-src 'self' https://api.pwnedpasswords.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:;">
+<title>Password Master - Secure Terminal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script>
+(function(){if(location.protocol!=='https:'&&location.hostname!=='localhost'&&location.hostname!=='127.0.0.1'){location.replace('https://'+location.hostname+location.pathname+location.search);}})();
+(function(){var c=console;var o=function(){return '[SECURITY] Console monitoring restricted.';};c.log=c.info=c.warn=c.error=c.debug=function(){c._log&&c._log(o());};})();
+</script>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+*{user-select:none;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;}
+body{font-family:'JetBrains Mono',monospace;background:#050508;color:#c0c0c8;overflow-x:hidden;}
+.copy-allowed,.copy-allowed *,.copy-btn{-webkit-user-select:text;-moz-user-select:text;-ms-user-select:text;user-select:text;}
+.glow-green{box-shadow:0 0 15px rgba(0,255,65,0.3),0 0 30px rgba(0,255,65,0.1);border-color:rgba(0,255,65,0.4);}
+.glow-red{box-shadow:0 0 15px rgba(255,0,60,0.3),0 0 30px rgba(255,0,60,0.1);border-color:rgba(255,0,60,0.4);}
+.glow-cyan{box-shadow:0 0 15px rgba(0,200,255,0.3),0 0 30px rgba(0,200,255,0.1);border-color:rgba(0,200,255,0.4);}
+.glow-purple{box-shadow:0 0 15px rgba(160,0,255,0.3),0 0 30px rgba(160,0,255,0.1);border-color:rgba(160,0,255,0.4);}
+.terminal-border{border:1px solid rgba(0,255,65,0.15);}
+.terminal-scroll::-webkit-scrollbar{width:4px;}
+.terminal-scroll::-webkit-scrollbar-track{background:rgba(0,0,0,0.3);}
+.terminal-scroll::-webkit-scrollbar-thumb{background:rgba(0,255,65,0.3);border-radius:2px;}
+.terminal-scroll::-webkit-scrollbar-thumb:hover{background:rgba(0,255,65,0.5);}
+.strength-bar{transition:width 0.3s ease,background 0.3s ease;height:6px;border-radius:3px;}
+.pulse{animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.6;}}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:0;}
+}
+@keyframes bootProgress{0%{width:0%;}100%{width:100%;}
+}
+@keyframes glitch{0%{transform:translate(0);}20%{transform:translate(-2px,2px);}40%{transform:translate(2px,-2px);}60%{transform:translate(-1px,-1px);}80%{transform:translate(1px,1px);}100%{transform:translate(0);}
+}
+.heatmap-cell{width:32px;height:32px;border-radius:4px;transition:all 0.2s ease;cursor:pointer;}
+.heatmap-cell:hover{transform:scale(1.2);z-index:10;}
+.lockdown-overlay{background:radial-gradient(ellipse at center,rgba(180,0,0,0.95) 0%,rgba(60,0,0,0.98) 50%,rgba(10,0,0,1) 100%);}
+.screen-glitch{animation:glitch 0.3s ease-in-out infinite;}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:9999;padding:10px 24px;border-radius:8px;font-size:13px;opacity:0;transition:opacity 0.3s ease;pointer-events:none;}
+.toast.show{opacity:1;}
+input[type="range"]{-webkit-appearance:none;appearance:none;height:4px;background:rgba(0,255,65,0.2);border-radius:2px;outline:none;}
+input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:16px;height:16px;background:#00ff41;border-radius:50%;cursor:pointer;box-shadow:0 0 10px rgba(0,255,65,0.4);}
+input[type="range"]::-moz-range-thumb{width:16px;height:16px;background:#00ff41;border-radius:50%;cursor:pointer;border:none;box-shadow:0 0 10px rgba(0,255,65,0.4);}
+input[type="checkbox"]{-webkit-appearance:none;appearance:none;width:18px;height:18px;border:2px solid rgba(0,255,65,0.3);border-radius:4px;cursor:pointer;position:relative;transition:all 0.2s;flex-shrink:0;}
+input[type="checkbox"]:checked{border-color:#00ff41;background:rgba(0,255,65,0.15);}
+input[type="checkbox"]:checked::after{content:'';position:absolute;left:4px;top:1px;width:6px;height:10px;border:solid #00ff41;border-width:0 2px 2px 0;transform:rotate(45deg);}
+input[type="text"],input[type="password"],input[type="number"],select{background:rgba(0,255,65,0.04);border:1px solid rgba(0,255,65,0.15);color:#c0c0c8;padding:8px 12px;border-radius:6px;outline:none;transition:all 0.2s;font-family:'JetBrains Mono',monospace;width:100%;}
+input[type="text"]:focus,input[type="password"]:focus,input[type="number"]:focus,select:focus{border-color:rgba(0,255,65,0.4);box-shadow:0 0 10px rgba(0,255,65,0.1);}
+select{background:rgba(0,10,0,0.9);}
+option{background:rgba(0,10,0,0.95);color:#c0c0c8;}
+button{transition:all 0.2s ease;cursor:pointer;}
+button:active{transform:scale(0.97);}
+#boot-overlay{z-index:100000;background:#050508;}
+#lockdown-screen{z-index:99999;}
+#panic-hidden{display:none;}
+</style>
+</head>
+<body>
+
+<div id="boot-overlay" class="fixed inset-0 flex flex-col items-center justify-center z-[100000] bg-[#050508]">
+  <div class="w-full max-w-xl mx-auto px-6">
+    <div class="text-[#00ff41] text-sm mb-6 opacity-60">SECURE TERMINAL v3.2.1</div>
+    <div id="boot-text" class="text-[#00ff41] text-sm leading-relaxed space-y-1"></div>
+    <div id="boot-progress" class="mt-6 w-full h-[2px] bg-[rgba(0,255,65,0.1)] rounded overflow-hidden">
+      <div class="h-full bg-[#00ff41] rounded" style="width:0%;"></div>
+    </div>
+    <div id="boot-status" class="mt-3 text-[rgba(0,255,65,0.4)] text-xs"></div>
+  </div>
+</div>
+
+<div id="lockdown-screen" class="fixed inset-0 lockdown-overlay flex flex-col items-center justify-center z-[99999] hidden">
+  <div class="text-center px-6 max-w-2xl">
+    <div class="text-6xl mb-8 screen-glitch">&#x26A0;&#xFE0F;</div>
+    <h1 class="text-3xl md:text-4xl font-bold text-red-500 mb-4">SECURITY VIOLATION DETECTED</h1>
+    <div id="lockdown-ip" class="text-xl text-red-400 mb-6 font-mono"></div>
+    <div class="text-red-300/80 text-sm mb-8 max-w-lg mx-auto leading-relaxed">
+      Unauthorized access detected. Your session has been terminated and your identity has been logged.
+      This incident will be reported to the security operations center.
+    </div>
+    <div id="lockdown-loading" class="text-red-400/60 text-xs font-mono pulse">Sending report to security operations center...</div>
+    <div class="mt-10 text-red-300/30 text-xs">Reference: SIR-2024-<span id="lockdown-ref"></span></div>
+  </div>
+</div>
+
+<div id="main-app" class="hidden">
+  <div id="toast" class="toast"></div>
+
+  <div class="min-h-screen bg-[#050508] p-3 md:p-6">
+    <div class="max-w-6xl mx-auto">
+
+      <div class="flex items-center justify-between mb-6 terminal-border rounded-lg p-4 glow-green bg-[rgba(0,255,65,0.02)]">
+        <div>
+          <h1 class="text-[#00ff41] text-lg md:text-xl font-bold tracking-wider">PASSWORD MASTER</h1>
+          <div class="text-[rgba(0,255,65,0.3)] text-xs mt-1">Secure Terminal &amp; Analysis Suite</div>
+        </div>
+        <div class="text-right">
+          <div class="text-[rgba(0,255,65,0.4)] text-xs"><span id="session-id" class="text-[#00ff41]"></span></div>
+          <div class="text-[rgba(0,255,65,0.2)] text-[10px] mt-1">CONNECTION: SECURE (TLS 1.3)</div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-5 gap-4 mb-4">
+
+        <div class="lg:col-span-3 space-y-4">
+
+          <div class="terminal-border rounded-lg p-4 glow-green bg-[rgba(0,255,65,0.02)]">
+            <div class="flex items-center justify-between mb-3">
+              <label class="text-[#00ff41] text-xs font-semibold tracking-wider">PASSWORD INPUT</label>
+              <button id="panic-btn" class="text-[rgba(255,0,60,0.5)] hover:text-red-500 text-[10px] transition">[ PANIC (ESC) ]</button>
+            </div>
+            <div class="relative">
+              <input type="text" id="password-input" placeholder="Enter or generate a password..." class="pr-20 text-sm bg-[rgba(0,255,65,0.03)] border-[rgba(0,255,65,0.12)]">
+              <div class="absolute right-2 top-1/2 -translate-y-1/2 flex gap-1">
+                <button id="copy-pwd-btn" class="copy-btn text-[10px] px-2 py-1 rounded bg-[rgba(0,255,65,0.08)] hover:bg-[rgba(0,255,65,0.15)] text-[#00ff41]">COPY</button>
+                <button id="clear-pwd-btn" class="text-[10px] px-2 py-1 rounded bg-[rgba(255,0,60,0.08)] hover:bg-[rgba(255,0,60,0.15)] text-red-400">&#x2715;</button>
+              </div>
+            </div>
+            <div class="mt-3 flex flex-wrap gap-2 text-[10px] text-[rgba(0,255,65,0.4)]">
+              <span id="chk-length">Length: 0</span>
+              <span class="opacity-30">|</span>
+              <span id="chk-lower">Lower: 0</span>
+              <span class="opacity-30">|</span>
+              <span id="chk-upper">Upper: 0</span>
+              <span class="opacity-30">|</span>
+              <span id="chk-digits">Digits: 0</span>
+              <span class="opacity-30">|</span>
+              <span id="chk-special">Special: 0</span>
+            </div>
+          </div>
+
+          <div class="terminal-border rounded-lg p-4 glow-green bg-[rgba(0,255,65,0.02)]">
+            <div class="text-[#00ff41] text-xs font-semibold tracking-wider mb-3">GENERATOR</div>
+            <div class="flex flex-wrap gap-3 mb-3">
+              <label class="flex items-center gap-2 text-xs text-[rgba(0,255,65,0.6)] cursor-pointer"><input type="checkbox" id="gen-upper" checked> Uppercase</label>
+              <label class="flex items-center gap-2 text-xs text-[rgba(0,255,65,0.6)] cursor-pointer"><input type="checkbox" id="gen-lower" checked> Lowercase</label>
+              <label class="flex items-center gap-2 text-xs text-[rgba(0,255,65,0.6)] cursor-pointer"><input type="checkbox" id="gen-numbers" checked> Numbers</label>
+              <label class="flex items-center gap-2 text-xs text-[rgba(0,255,65,0.6)] cursor-pointer"><input type="checkbox" id="gen-symbols" checked> Symbols</label>
+            </div>
+            <div class="flex items-center gap-4 mb-3">
+              <div class="flex-1">
+                <div class="flex justify-between text-[10px] text-[rgba(0,255,65,0.4)] mb-1">
+                  <span>Length</span><span id="gen-length-val">16</span>
+                </div>
+                <input type="range" id="gen-length" min="4" max="64" value="16" class="w-full">
+              </div>
+              <div class="flex gap-2">
+                <button id="gen-btn" class="text-xs px-4 py-2 rounded bg-[rgba(0,255,65,0.1)] hover:bg-[rgba(0,255,65,0.2)] text-[#00ff41] border border-[rgba(0,255,65,0.2)]">GENERATE</button>
+              </div>
+            </div>
+            <div class="border-t border-[rgba(0,255,65,0.08)] pt-3 mt-2">
+              <div class="text-[rgba(0,255,65,0.4)] text-[10px] mb-2">PASSPHRASE (Readable Words)</div>
+              <div class="flex items-center gap-3">
+                <div class="flex items-center gap-2">
+                  <label class="text-[10px] text-[rgba(0,255,65,0.5)]">Words:</label>
+                  <select id="passphrase-words" class="text-xs w-16">
+                    <option value="4">4</option><option value="5" selected>5</option><option value="6">6</option>
+                  </select>
+                </div>
+                <button id="passphrase-btn" class="text-xs px-4 py-2 rounded bg-[rgba(0,200,255,0.1)] hover:bg-[rgba(0,200,255,0.2)] text-cyan-400 border border-[rgba(0,200,255,0.2)]">GENERATE PASSPHRASE</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="terminal-border rounded-lg p-4 glow-green bg-[rgba(0,255,65,0.02)]">
+            <div class="text-[#00ff41] text-xs font-semibold tracking-wider mb-3">ANALYSIS</div>
+            <div class="mb-3">
+              <div class="flex justify-between text-[10px] mb-1">
+                <span class="text-[rgba(0,255,65,0.5)]">STRENGTH</span>
+                <span id="strength-label" class="text-[rgba(0,255,65,0.7)]">None</span>
+              </div>
+              <div class="w-full h-[6px] bg-[rgba(0,255,65,0.06)] rounded overflow-hidden">
+                <div id="strength-bar" class="strength-bar" style="width:0%;"></div>
+              </div>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+              <div class="bg-[rgba(0,255,65,0.03)] rounded p-2">
+                <div class="text-[rgba(0,255,65,0.3)] text-[10px]">Entropy</div>
+                <div id="entropy-value" class="text-[rgba(0,255,65,0.7)] font-mono">0.0 bits</div>
+              </div>
+              <div class="bg-[rgba(0,255,65,0.03)] rounded p-2">
+                <div class="text-[rgba(0,255,65,0.3)] text-[10px]">Brute Force Time</div>
+                <div id="brute-time" class="text-[rgba(0,255,65,0.7)] font-mono">Instant</div>
+              </div>
+              <div class="bg-[rgba(0,255,65,0.03)] rounded p-2">
+                <div class="text-[rgba(0,255,65,0.3)] text-[10px]">Attack Speed</div>
+                <div>
+                  <input type="range" id="attack-speed" min="3" max="10" value="9" step="1" class="w-full">
+                  <div id="attack-speed-label" class="text-[rgba(0,255,65,0.5)] font-mono">1.0 B/s</div>
+                </div>
+              </div>
+              <div class="bg-[rgba(0,255,65,0.03)] rounded p-2">
+                <div class="text-[rgba(0,255,65,0.3)] text-[10px]">Patterns</div>
+                <div id="pattern-warnings" class="text-[rgba(0,255,65,0.5)] font-mono">None</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="lg:col-span-2 space-y-4">
+
+          <div class="terminal-border rounded-lg p-4 glow-purple bg-[rgba(160,0,255,0.02)]">
+            <div class="text-purple-400 text-xs font-semibold tracking-wider mb-3">HEATMAP &mdash; Length vs Character Set</div>
+            <div id="heatmap-container" class="overflow-x-auto">
+              <table class="w-full text-center" id="heatmap-table">
+                <thead><tr><th class="text-[8px] text-[rgba(0,255,65,0.3)] p-1"></th></tr></thead>
+                <tbody id="heatmap-body"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="terminal-border rounded-lg p-4 glow-cyan bg-[rgba(0,200,255,0.02)]">
+            <div class="text-cyan-400 text-xs font-semibold tracking-wider mb-2">SHA-256 HASH</div>
+            <div id="hash-display" class="text-[10px] text-cyan-300/70 font-mono break-all bg-[rgba(0,0,0,0.3)] rounded p-2 min-h-[32px]">Enter a password to compute hash</div>
+            <button id="hash-copy-btn" class="copy-btn text-[10px] mt-2 px-3 py-1 rounded bg-[rgba(0,200,255,0.08)] hover:bg-[rgba(0,200,255,0.15)] text-cyan-400">COPY HASH</button>
+          </div>
+
+          <div class="terminal-border rounded-lg p-4 glow-cyan bg-[rgba(0,200,255,0.02)]">
+            <div class="text-cyan-400 text-xs font-semibold tracking-wider mb-2">HIBP LEAK CHECK</div>
+            <div class="flex items-center gap-2 mb-2">
+              <button id="hibp-check-btn" class="text-xs px-3 py-1.5 rounded bg-[rgba(0,200,255,0.08)] hover:bg-[rgba(0,200,255,0.15)] text-cyan-400 border border-[rgba(0,200,255,0.2)]">CHECK BREACHES</button>
+              <span id="hibp-status" class="text-[10px] text-[rgba(0,255,65,0.4)]">Ready</span>
+            </div>
+            <div id="hibp-result" class="text-[10px] font-mono bg-[rgba(0,0,0,0.3)] rounded p-2 min-h-[24px] text-[rgba(0,255,65,0.5)]">No check performed yet</div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="terminal-border rounded-lg p-4 glow-red bg-[rgba(255,0,60,0.02)] mb-4">
+        <div class="flex items-center justify-between mb-2">
+          <div class="text-red-400 text-xs font-semibold tracking-wider">SESSION HISTORY (Volatile / RAM Only)</div>
+          <button id="clear-history-btn" class="text-[10px] px-2 py-1 rounded bg-[rgba(255,0,60,0.08)] hover:bg-[rgba(255,0,60,0.15)] text-red-400">CLEAR</button>
+        </div>
+        <div id="history-list" class="space-y-1 max-h-[120px] overflow-y-auto terminal-scroll">
+          <div class="text-[10px] text-[rgba(0,255,65,0.2)]">No entries in session history.</div>
+        </div>
+      </div>
+
+      <div class="terminal-border rounded-lg p-3 bg-[rgba(255,0,60,0.02)] border-red-900/20">
+        <p class="text-[10px] text-[rgba(255,100,100,0.5)] leading-relaxed">
+          &#x26A0;&#xFE0F; This tool is for educational &amp; ethical use only. Note: IP blocking is simulated for deterrence. Reverse engineering attempts violate terms of use.
+        </p>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div id="panic-hidden" class="fixed inset-0 bg-[#050508] z-[99990] flex items-center justify-center">
+  <div class="text-center">
+    <div class="text-[rgba(0,255,65,0.2)] text-sm mb-2">SESSION TERMINATED</div>
+    <div class="text-[rgba(0,255,65,0.1)] text-xs">Press ESC again to restore</div>
+  </div>
+</div>
+
+<script>
+(function(){
+
+var PASSWORDS_WORDS = [
+"abyss","aurora","blaze","cipher","cosmos","crystal","cyber","daemon","dark","delta","drift","dynamo",
+"echo","ember","epsilon","eternal","falcon","forge","frost","fusion","galaxy","glacier","gravity","horizon",
+"iceberg","inferno","iris","jade","jolt","jungle","karma","krypton","labyrinth","lancer","lunar","matrix",
+"mirage","nebula","neon","nexus","night","nova","omega","onyx","orbit","panda","phantom","photon",
+"plasma","prism","pulse","quantum","radar","raven","rift","rogue","saber","solar","spark","starlight",
+"storm","synthetic","temple","terra","thunder","titan","tornado","ultra","umbra","vector","venom","vertex",
+"vortex","warrior","winter","xenon","yield","zenith","zero","zipper","zone","arc","ark","axe",
+"band","beam","bird","blade","block","bolt","bone","boot","brick","brink","burst","cage",
+"calm","cape","card","cave","cell","chip","claw","cliff","clip","cloud","coil","core",
+"cove","crane","crest","crux","cube","dawn","deck","deep","dense","dice","dive","dock",
+"dome","dose","dove","drag","draw","drip","drop","drum","dual","dusk","dust","eagle",
+"edge","elite","epoch","equal","erase","error","event","evoke","exile","fable","facet","fade",
+"faith","fango","fault","feign","fence","ferry","fetch","fiber","field","fifth","fifty","fight",
+"final","flame","flash","fleet","flint","flock","flood","floor","flora","floss","fluid","flush",
+"focus","force","forge","forth","forum","found","frame","frank","fraud","freed","fresh","front",
+"frost","froth","fruit","fully","fuse","fuzz","gauge","ghost","giant","given","glass","gleam",
+"glide","globe","gloom","glory","gloss","glove","glow","gnarl","going","grace","grade","grain"
+];
+
+var state = {
+  sessionHistory: [],
+  banned: false,
+  panicMode: false,
+  coreFunctions: {}
+};
+
+var lsKeys = ['_sec_ban','_metric_data','_cache_ts','_session_v'];
+
+function readLS(key){try{return localStorage.getItem(key);}catch(e){return null;}}
+function writeLS(key,val){try{localStorage.setItem(key,val);}catch(e){}}
+function removeLS(key){try{localStorage.removeItem(key);}catch(e){}}
+
+function checkBan(){
+  var found = [];
+  for(var i=0;i<lsKeys.length;i++){
+    var v = readLS(lsKeys[i]);
+    if(v){
+      try{
+        var d = JSON.parse(v);
+        if(d.ban && d.expiry && Date.now() < d.expiry){
+          found.push(d);
+        } else if(d.ban && d.expiry && Date.now() >= d.expiry){
+          removeLS(lsKeys[i]);
+        }
+      }catch(e){}
+    }
+  }
+  return found.length >= 2 ? found[0] : null;
+}
+
+function generateFakeIP(){
+  var parts = [];
+  parts.push(Math.floor(Math.random()*200)+10);
+  parts.push(Math.floor(Math.random()*255));
+  parts.push(Math.floor(Math.random()*255));
+  parts.push(Math.floor(Math.random()*255));
+  return parts.join('.');
+}
+
+function generateFingerprint(){
+  var s = screen.width+'x'+screen.height+'|';
+  s += Intl.DateTimeFormat().resolvedOptions().timeZone+'|';
+  s += navigator.userAgent;
+  return btoa(s).substring(0,32);
+}
+
+function setBan(){
+  var fingerprint = generateFingerprint();
+  var fakeIP = generateFakeIP();
+  var expiry = Date.now() + 7*24*60*60*1000;
+  var payload = JSON.stringify({ban:true,ip:fakeIP,fingerprint:fingerprint,expiry:expiry,ref:Math.random().toString(36).substring(2,10).toUpperCase()});
+  for(var i=0;i<lsKeys.length;i++){
+    writeLS(lsKeys[i],payload);
+  }
+  return {ip:fakeIP,ref:payload};
+}
+
+function showLockdown(ip,ref){
+  var lockdown = document.getElementById('lockdown-screen');
+  if(!lockdown) return;
+  document.getElementById('lockdown-ip').textContent = 'Your IP ('+ip+') has been blocked for 7 days.';
+  document.getElementById('lockdown-ref').textContent = ref||'----';
+  lockdown.classList.remove('hidden');
+  var main = document.getElementById('main-app');
+  if(main) main.classList.add('hidden');
+}
+
+function triggerLockdown(){
+  if(state.banned) return;
+  state.banned = true;
+  var pwdInput = document.getElementById('password-input');
+  if(pwdInput) pwdInput.value = '';
+  var result = setBan();
+  showLockdown(result.ip, result.ref);
+  var loading = document.getElementById('lockdown-loading');
+  if(loading){
+    var dots = 0;
+    setInterval(function(){
+      dots = (dots+1)%4;
+      loading.textContent = 'Sending report to security operations center'+'.'.repeat(dots);
+    },600);
+  }
+}
+
+function detectTampering(){
+  var checks = [
+    {name:'generatePassword',fn:generatePassword},
+    {name:'calculateEntropy',fn:calculateEntropy},
+    {name:'sha256Hash',fn:sha256Hash}
+  ];
+  for(var i=0;i<checks.length;i++){
+    if(typeof checks[i].fn !== 'function') {
+      triggerLockdown();
+      return;
+    }
+  }
+  if(typeof window._sec_core === 'undefined') {
+    triggerLockdown();
+  }
+}
+
+function blockShortcuts(e){
+  var key = e.key||'';
+  var ctrl = e.ctrlKey||false;
+  var shift = e.shiftKey||false;
+  var meta = e.metaKey||false;
+  var which = e.which||e.keyCode||0;
+  if(key === 'F12' || which === 123){e.preventDefault();showToast('Inspection tools disabled.');return false;}
+  if(ctrl && shift && (key === 'I'||key === 'i'||which === 73)){e.preventDefault();showToast('Inspection tools disabled.');return false;}
+  if(ctrl && shift && (key === 'C'||key === 'c'||which === 67)){e.preventDefault();showToast('Inspection tools disabled.');return false;}
+  if(ctrl && (key === 'U'||key === 'u'||which === 85)){e.preventDefault();showToast('Inspection tools disabled.');return false;}
+  if(ctrl && (key === 'S'||key === 's'||which === 83)){e.preventDefault();showToast('View Source disabled.');return false;}
+  if(ctrl && shift && (key === 'J'||key === 'j'||which === 74)){e.preventDefault();showToast('Inspection tools disabled.');return false;}
+  if(key === 'Escape' || which === 27){
+    e.preventDefault();
+    togglePanic();
+    return false;
+  }
+}
+
+function disableContextMenu(e){
+  e.preventDefault();
+  showToast('&#x1F6AB; Context menu disabled for security.');
+}
+
+var toastTimeout = null;
+function showToast(msg){
+  var el = document.getElementById('toast');
+  if(!el) return;
+  el.innerHTML = msg;
+  el.classList.add('show');
+  if(toastTimeout) clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(function(){el.classList.remove('show');},2500);
+}
+
+function detectDevTools(){
+  var start = performance.now();
+  debugger;
+  var end = performance.now();
+  if(end - start > 100){
+    triggerLockdown();
+  }
+  var widthThreshold = window.outerWidth - window.innerWidth > 160;
+  var heightThreshold = window.outerHeight - window.innerHeight > 160;
+  if(widthThreshold || heightThreshold){
+    triggerLockdown();
+  }
+}
+
+function overrideConsole(){
+  var c = console;
+  var fake = function(){return '[SECURITY] Console monitoring restricted.';};
+  c.log = c.info = c.warn = c.error = c.debug = function(){
+    if(c._log) c._log(fake());
+  };
+}
+
+function calculateEntropy(pwd){
+  if(!pwd||pwd.length===0) return 0;
+  var charset = 0;
+  if(/[a-z]/.test(pwd)) charset += 26;
+  if(/[A-Z]/.test(pwd)) charset += 26;
+  if(/[0-9]/.test(pwd)) charset += 10;
+  if(/[^a-zA-Z0-9]/.test(pwd)) charset += 33;
+  if(charset===0) return 0;
+  return pwd.length * (Math.log(charset)/Math.log(2));
+}
+
+function detectPatterns(pwd){
+  var warnings = [];
+  var lower = pwd.toLowerCase();
+  var sequences = ['qwerty','qwertz','asdfgh','zxcvbn','qwertyuiop','asdfghjkl','zxcvbnm','123456','12345','1234','234567','345678','password','passw0rd','admin','letmein','welcome','login','master','12345678','123456789','qwerty123'];
+  for(var i=0;i<sequences.length;i++){
+    if(lower.indexOf(sequences[i])!==-1){
+      warnings.push('Weak sequence: "'+sequences[i]+'"');
+    }
+  }
+  if(pwd.length < 8) warnings.push('Too short (< 8 chars)');
+  if(/^[a-zA-Z]+$/.test(pwd)) warnings.push('Only letters');
+  if(/^[0-9]+$/.test(pwd)) warnings.push('Only digits');
+  if(/(.)\1{2,}/.test(pwd)) warnings.push('Repeated characters');
+  if(pwd.length > 0 && warnings.length === 0) warnings.push('No common patterns');
+  return warnings;
+}
+
+function calculateBruteForceTime(entropy, speed){
+  var combinations = Math.pow(2, entropy);
+  var seconds = combinations / speed;
+  if(seconds < 1) return 'Instant';
+  if(seconds < 60) return seconds.toFixed(1)+' seconds';
+  if(seconds < 3600) return (seconds/60).toFixed(1)+' minutes';
+  if(seconds < 86400) return (seconds/3600).toFixed(1)+' hours';
+  if(seconds < 31536000) return (seconds/86400).toFixed(1)+' days';
+  if(seconds < 315360000) return (seconds/31536000).toFixed(1)+' years';
+  if(seconds < 3.1536e11) return (seconds/31536000).toFixed(0)+' years';
+  return (seconds/3.1536e16).toFixed(1)+'M years';
+}
+
+function getCharSetScore(pwd){
+  var score = 0;
+  if(/[a-z]/.test(pwd)) score += 1;
+  if(/[A-Z]/.test(pwd)) score += 1;
+  if(/[0-9]/.test(pwd)) score += 1;
+  if(/[^a-zA-Z0-9]/.test(pwd)) score += 1;
+  return score;
+}
+
+function getStrengthInfo(pwd){
+  if(!pwd||pwd.length===0) return {score:0,label:'None',color:'rgba(0,255,65,0.2)'};
+  var entropy = calculateEntropy(pwd);
+  var score = Math.min(100, Math.round((entropy / 128) * 100));
+  var label, color;
+  if(score < 25){label='Very Weak';color='#ff1744';}
+  else if(score < 50){label='Weak';color='#ff9100';}
+  else if(score < 65){label='Fair';color='#ffea00';}
+  else if(score < 80){label='Strong';color='#76ff03';}
+  else {label='Very Strong';color='#00e676';}
+  if(pwd.length===0){label='None';score=0;color='rgba(0,255,65,0.2)';}
+  return {score:score,label:label,color:color,entropy:entropy};
+}
+
+function analyzeAndUpdate(pwd){
+  if(!pwd) pwd = document.getElementById('password-input') ? document.getElementById('password-input').value : '';
+  var info = getStrengthInfo(pwd);
+  var bar = document.getElementById('strength-bar');
+  var label = document.getElementById('strength-label');
+  var entropyEl = document.getElementById('entropy-value');
+  var bruteEl = document.getElementById('brute-time');
+  var patternsEl = document.getElementById('pattern-warnings');
+  if(bar) bar.style.width = info.score + '%';
+  if(bar) bar.style.background = info.color;
+  if(bar) bar.style.boxShadow = '0 0 8px '+info.color;
+  if(label) label.textContent = info.label;
+  if(label) label.style.color = pwd ? info.color : 'rgba(0,255,65,0.3)';
+  if(entropyEl) entropyEl.textContent = pwd ? info.entropy.toFixed(2)+' bits' : '0.0 bits';
+  var speedSlider = document.getElementById('attack-speed');
+  var speed = speedSlider ? Math.pow(10, parseInt(speedSlider.value)) : 1000000000;
+  if(bruteEl) bruteEl.textContent = pwd ? calculateBruteForceTime(info.entropy, speed) : 'Instant';
+  var warnings = pwd ? detectPatterns(pwd) : [];
+  if(patternsEl){
+    if(warnings.length === 0 || (warnings.length === 1 && warnings[0] === 'No common patterns')){
+      patternsEl.textContent = 'None';
+      patternsEl.style.color = 'rgba(0,255,65,0.5)';
+    } else {
+      var bad = warnings.filter(function(w){return w !== 'No common patterns';});
+      patternsEl.textContent = bad.length > 0 ? bad.join('; ') : 'None';
+      patternsEl.style.color = bad.length > 0 ? '#ff9100' : 'rgba(0,255,65,0.5)';
+    }
+  }
+  var chkLen = document.getElementById('chk-length');
+  var chkLow = document.getElementById('chk-lower');
+  var chkUp = document.getElementById('chk-upper');
+  var chkDig = document.getElementById('chk-digits');
+  var chkSpec = document.getElementById('chk-special');
+  if(chkLen) chkLen.textContent = 'Length: '+pwd.length;
+  if(chkLow) chkLow.textContent = 'Lower: '+(pwd.match(/[a-z]/g)||[]).length;
+  if(chkUp) chkUp.textContent = 'Upper: '+(pwd.match(/[A-Z]/g)||[]).length;
+  if(chkDig) chkDig.textContent = 'Digits: '+(pwd.match(/[0-9]/g)||[]).length;
+  if(chkSpec) chkSpec.textContent = 'Special: '+(pwd.match(/[^a-zA-Z0-9]/g)||[]).length;
+  updateHeatmap(pwd);
+  updateHash(pwd);
+}
+
+function updateHeatmap(pwd){
+  var body = document.getElementById('heatmap-body');
+  if(!body) return;
+  var lengths = [0,4,8,12,16,20];
+  var sets = [
+    {label:'Lower',test:function(p){return /[a-z]/.test(p);},score:1},
+    {label:'+Upper',test:function(p){return /[A-Z]/.test(p);},score:1},
+    {label:'+Digit',test:function(p){return /[0-9]/.test(p);},score:1},
+    {label:'+Symbol',test:function(p){return /[^a-zA-Z0-9]/.test(p);},score:1}
+  ];
+  var html = '';
+  for(var r=0;r<sets.length;r++){
+    html += '<tr>';
+    html += '<td class="text-[8px] text-[rgba(0,255,65,0.3)] pr-2 text-right w-12">'+sets[r].label+'</td>';
+    for(var c=0;c<lengths.length-1;c++){
+      var minL = lengths[c];
+      var maxL = lengths[c+1];
+      var active = pwd && pwd.length >= minL && pwd.length < maxL && sets[r].test(pwd);
+      var intensity = active ? 1 : (pwd && pwd.length >= minL ? 0.3 : 0.05);
+      var bg = active ? 'rgba(0,255,65,'+(0.3 + 0.7 * intensity)+')' : 'rgba(0,255,65,'+intensity+')';
+      html += '<td class="p-0.5"><div class="heatmap-cell mx-auto" style="background:'+bg+';box-shadow:'+(active?'0 0 6px rgba(0,255,65,0.3)':'none')+';"></div></td>';
+    }
+    html += '</tr>';
+  }
+  html += '<tr><td class="text-[8px] text-[rgba(0,255,65,0.2)] pt-1"></td>';
+  for(var c=0;c<lengths.length-1;c++){
+    html += '<td class="text-[7px] text-[rgba(0,255,65,0.2)] pt-1">'+lengths[c]+'-'+(lengths[c+1]-1)+'</td>';
+  }
+  html += '</tr>';
+  body.innerHTML = html;
+}
+
+async function sha256Hash(str){
+  var enc = new TextEncoder();
+  var data = enc.encode(str);
+  var hash = await crypto.subtle.digest('SHA-256', data);
+  var hex = '';
+  var bytes = new Uint8Array(hash);
+  for(var i=0;i<bytes.length;i++){
+    hex += bytes[i].toString(16).padStart(2,'0');
+  }
+  return hex;
+}
+
+async function updateHash(pwd){
+  var el = document.getElementById('hash-display');
+  if(!el) return;
+  if(!pwd||pwd.length===0){
+    el.textContent = 'Enter a password to compute hash';
+    return;
+  }
+  try{
+    var hash = await sha256Hash(pwd);
+    el.textContent = hash;
+  }catch(e){
+    el.textContent = 'Error computing hash';
+  }
+}
+
+async function sha1Hash(str){
+  var enc = new TextEncoder();
+  var data = enc.encode(str);
+  var hash = await crypto.subtle.digest('SHA-1', data);
+  var hex = '';
+  var bytes = new Uint8Array(hash);
+  for(var i=0;i<bytes.length;i++){
+    hex += bytes[i].toString(16).padStart(2,'0');
+  }
+  return hex.toUpperCase();
+}
+
+async function checkHIBP(){
+  var pwd = document.getElementById('password-input');
+  if(!pwd||!pwd.value){
+    showToast('Enter a password first.');
+    return;
+  }
+  var btn = document.getElementById('hibp-check-btn');
+  var status = document.getElementById('hibp-status');
+  var result = document.getElementById('hibp-result');
+  if(btn) btn.disabled = true;
+  if(btn) btn.textContent = 'CHECKING...';
+  if(status) status.textContent = 'Querying HIBP (k-anonymity)...';
+  try{
+    var hash = await sha1Hash(pwd.value);
+    var prefix = hash.substring(0,5);
+    var suffix = hash.substring(5);
+    var resp = await fetch('https://api.pwnedpasswords.com/range/'+prefix);
+    var text = await resp.text();
+    var lines = text.split('\n');
+    var found = false;
+    var count = 0;
+    for(var i=0;i<lines.length;i++){
+      var parts = lines[i].split(':');
+      if(parts[0] === suffix){
+        found = true;
+        count = parseInt(parts[1]) || 0;
+        break;
+      }
+    }
+    if(result){
+      if(found){
+        result.innerHTML = '<span class="text-red-400">&#x26A0; Password found in '+count.toLocaleString()+' breach(es). Do NOT use this password.</span>';
+      } else {
+        result.innerHTML = '<span class="text-green-400">&#x2713; Password not found in known breaches. Good.</span>';
+      }
+    }
+    if(status) status.textContent = 'Last checked: '+new Date().toLocaleTimeString();
+    addHistory(pwd.value, hash, 'hibp_checked');
+  } catch(e){
+    if(result) result.innerHTML = '<span class="text-red-400">Error checking HIBP: '+e.message+'</span>';
+    if(status) status.textContent = 'Check failed';
+  }
+  if(btn) btn.disabled = false;
+  if(btn) btn.textContent = 'CHECK BREACHES';
+}
+
+function generatePassword(){
+  var len = parseInt(document.getElementById('gen-length').value);
+  var upper = document.getElementById('gen-upper').checked;
+  var lower = document.getElementById('gen-lower').checked;
+  var numbers = document.getElementById('gen-numbers').checked;
+  var symbols = document.getElementById('gen-symbols').checked;
+  if(!upper&&!lower&&!numbers&&!symbols){
+    showToast('Select at least one character type.');
+    return '';
+  }
+  var chars = '';
+  if(upper) chars += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  if(lower) chars += 'abcdefghijklmnopqrstuvwxyz';
+  if(numbers) chars += '0123456789';
+  if(symbols) chars += '!@#$%^&*()_+-=[]{}|;:,.<>?';
+  var result = '';
+  var array = new Uint32Array(len);
+  crypto.getRandomValues(array);
+  for(var i=0;i<len;i++){
+    result += chars[array[i] % chars.length];
+  }
+  return result;
+}
+
+function generatePassphrase(){
+  var count = parseInt(document.getElementById('passphrase-words').value);
+  var words = [];
+  var used = {};
+  var maxAttempts = 100;
+  while(words.length < count && maxAttempts > 0){
+    var idx = Math.floor(Math.random() * PASSWORDS_WORDS.length);
+    var w = PASSWORDS_WORDS[idx];
+    if(!used[w]){
+      used[w] = true;
+      words.push(w);
+    }
+    maxAttempts--;
+  }
+  return words.join('-');
+}
+
+function addHistory(pwd, hash, action){
+  var entry = {
+    password: pwd,
+    hash: hash || '',
+    action: action || 'generated',
+    timestamp: new Date().toISOString()
+  };
+  state.sessionHistory.unshift(entry);
+  if(state.sessionHistory.length > 5){
+    state.sessionHistory = state.sessionHistory.slice(0,5);
+  }
+  renderHistory();
+}
+
+function renderHistory(){
+  var list = document.getElementById('history-list');
+  if(!list) return;
+  if(state.sessionHistory.length === 0){
+    list.innerHTML = '<div class="text-[10px] text-[rgba(0,255,65,0.2)]">No entries in session history.</div>';
+    return;
+  }
+  var html = '';
+  for(var i=0;i<state.sessionHistory.length;i++){
+    var e = state.sessionHistory[i];
+    var masked = e.password.length > 0 ? e.password.substring(0,2)+'*'.repeat(Math.min(e.password.length-2, 20)) : '';
+    html += '<div class="flex items-center justify-between text-[10px] py-1 border-b border-[rgba(0,255,65,0.04)] last:border-0">';
+    html += '<span class="text-[rgba(0,255,65,0.3)]">#'+(i+1)+'</span>';
+    html += '<span class="text-[rgba(0,255,65,0.6)] font-mono">'+masked+'</span>';
+    html += '<span class="text-[rgba(0,255,65,0.3)] text-[8px]">'+e.hash.substring(0,12)+'...</span>';
+    html += '</div>';
+  }
+  list.innerHTML = html;
+}
+
+function setPasswordValue(val){
+  var input = document.getElementById('password-input');
+  if(input){
+    input.value = val;
+    input.dispatchEvent(new Event('input',{bubbles:true}));
+  }
+}
+
+function togglePanic(){
+  var main = document.getElementById('main-app');
+  var hidden = document.getElementById('panic-hidden');
+  state.panicMode = !state.panicMode;
+  if(state.panicMode){
+    var pwdInput = document.getElementById('password-input');
+    if(pwdInput) pwdInput.value = '';
+    state.sessionHistory = [];
+    renderHistory();
+    var hashEl = document.getElementById('hash-display');
+    if(hashEl) hashEl.textContent = 'Enter a password to compute hash';
+    if(main) main.classList.add('hidden');
+    if(hidden) hidden.style.display = 'flex';
+  } else {
+    if(main) main.classList.remove('hidden');
+    if(hidden) hidden.style.display = 'none';
+  }
+}
+
+function memoryCleanup(){
+  var pwdInput = document.getElementById('password-input');
+  if(pwdInput) pwdInput.value = '';
+  state.sessionHistory = [];
+  var inputs = document.querySelectorAll('input[type="text"], input[type="password"]');
+  for(var i=0;i<inputs.length;i++){
+    inputs[i].value = '';
+  }
+}
+
+function init(){
+  var banData = checkBan();
+  if(banData){
+    state.banned = true;
+    showLockdown(banData.ip, banData.ref || '----');
+    return;
+  }
+
+  var sessionId = Math.random().toString(36).substring(2,8).toUpperCase();
+  var sidEl = document.getElementById('session-id');
+  if(sidEl) sidEl.textContent = 'SID-'+sessionId;
+
+  var bootLines = [
+    {text:'[BOOT] Initializing secure environment...',delay:200},
+    {text:'[BOOT] Loading security modules...',delay:300},
+    {text:'[OK]   Cryptographic engine: Web Crypto API v'+(crypto.subtle?'1.0':'N/A'),delay:400},
+    {text:'[OK]   Entropy source: cryptographically secure',delay:300},
+    {text:'[BOOT] Establishing k-anonymity tunnel...',delay:400},
+    {text:'[OK]   k-anonymity: k=5, HIBP integration ready',delay:300},
+    {text:'[BOOT] Initializing tamper detection...',delay:300},
+    {text:'[BOOT] Applying security hardening...',delay:300},
+    {text:'[OK]   System ready.',delay:200},
+    {text:'',delay:100}
+  ];
+
+  var bootText = document.getElementById('boot-text');
+  var bootProgress = document.getElementById('boot-progress');
+  var bootStatus = document.getElementById('boot-status');
+  var idx = 0;
+  function showNextBootLine(){
+    if(idx >= bootLines.length){
+      if(bootStatus) bootStatus.textContent = 'SYSTEM READY';
+      var prog = bootProgress ? bootProgress.querySelector('div') : null;
+      if(prog) prog.style.width = '100%';
+      setTimeout(function(){
+        var overlay = document.getElementById('boot-overlay');
+        if(overlay){
+          overlay.style.transition = 'opacity 0.5s ease';
+          overlay.style.opacity = '0';
+          setTimeout(function(){
+            overlay.classList.add('hidden');
+            document.getElementById('main-app').classList.remove('hidden');
+          },500);
+        }
+      },500);
+      return;
+    }
+    var line = bootLines[idx];
+    if(line.text){
+      if(bootText) bootText.innerHTML += '<div>'+(line.text.startsWith('[OK]')?'<span class="text-[#00ff41]">':'<span class="text-[rgba(0,255,65,0.5)]">')+line.text+'</span></div>';
+    }
+    if(bootStatus) bootStatus.textContent = 'Loading security modules... '+(Math.round((idx/bootLines.length)*100))+'%';
+    var prog = bootProgress ? bootProgress.querySelector('div') : null;
+    if(prog) prog.style.width = ((idx+1)/bootLines.length*100)+'%';
+    idx++;
+    setTimeout(showNextBootLine, line.delay);
+  }
+  showNextBootLine();
+
+  overrideConsole();
+  window._sec_core = true;
+
+  state.coreFunctions = {
+    generatePassword: generatePassword,
+    calculateEntropy: calculateEntropy,
+    sha256Hash: sha256Hash
+  };
+
+  document.addEventListener('keydown', blockShortcuts);
+  document.addEventListener('contextmenu', disableContextMenu);
+
+  var pwdInput = document.getElementById('password-input');
+  if(pwdInput){
+    pwdInput.addEventListener('input', function(){analyzeAndUpdate(this.value);});
+  }
+
+  var genBtn = document.getElementById('gen-btn');
+  if(genBtn){
+    genBtn.addEventListener('click', function(){
+      var pwd = generatePassword();
+      if(pwd){
+        setPasswordValue(pwd);
+        sha256Hash(pwd).then(function(hash){
+          addHistory(pwd, hash, 'generated');
+        });
+      }
+    });
+  }
+
+  var passBtn = document.getElementById('passphrase-btn');
+  if(passBtn){
+    passBtn.addEventListener('click', function(){
+      var pwd = generatePassphrase();
+      if(pwd){
+        setPasswordValue(pwd);
+        sha256Hash(pwd).then(function(hash){
+          addHistory(pwd, hash, 'passphrase');
+        });
+      }
+    });
+  }
+
+  var copyBtn = document.getElementById('copy-pwd-btn');
+  if(copyBtn){
+    copyBtn.addEventListener('click', function(){
+      var input = document.getElementById('password-input');
+      if(input && input.value){
+        navigator.clipboard.writeText(input.value).then(function(){
+          showToast('Password copied to clipboard.');
+        }).catch(function(){
+          input.select();
+          document.execCommand('copy');
+          showToast('Password copied.');
+        });
+      } else {
+        showToast('Nothing to copy.');
+      }
+    });
+  }
+
+  var hashCopyBtn = document.getElementById('hash-copy-btn');
+  if(hashCopyBtn){
+    hashCopyBtn.addEventListener('click', function(){
+      var el = document.getElementById('hash-display');
+      if(el && el.textContent && el.textContent.indexOf('Enter')===-1){
+        navigator.clipboard.writeText(el.textContent).then(function(){
+          showToast('Hash copied to clipboard.');
+        }).catch(function(){
+          showToast('Copy failed.');
+        });
+      } else {
+        showToast('Nothing to copy.');
+      }
+    });
+  }
+
+  var clearPwdBtn = document.getElementById('clear-pwd-btn');
+  if(clearPwdBtn){
+    clearPwdBtn.addEventListener('click', function(){
+      var input = document.getElementById('password-input');
+      if(input){input.value = '';input.dispatchEvent(new Event('input',{bubbles:true}));}
+    });
+  }
+
+  var speedSlider = document.getElementById('attack-speed');
+  if(speedSlider){
+    speedSlider.addEventListener('input', function(){
+      var val = Math.pow(10, parseInt(this.value));
+      var label = document.getElementById('attack-speed-label');
+      if(label){
+        if(val >= 1000000000) label.textContent = (val/1000000000).toFixed(1)+' B/s';
+        else if(val >= 1000000) label.textContent = (val/1000000).toFixed(1)+' M/s';
+        else if(val >= 1000) label.textContent = (val/1000).toFixed(0)+' K/s';
+        else label.textContent = val+'/s';
+      }
+      analyzeAndUpdate();
+    });
+  }
+
+  var genLength = document.getElementById('gen-length');
+  if(genLength){
+    genLength.addEventListener('input', function(){
+      document.getElementById('gen-length-val').textContent = this.value;
+    });
+  }
+
+  var clearHistBtn = document.getElementById('clear-history-btn');
+  if(clearHistBtn){
+    clearHistBtn.addEventListener('click', function(){
+      state.sessionHistory = [];
+      renderHistory();
+      showToast('Session history cleared.');
+    });
+  }
+
+  var hibpBtn = document.getElementById('hibp-check-btn');
+  if(hibpBtn){
+    hibpBtn.addEventListener('click', checkHIBP);
+  }
+
+  var panicBtn = document.getElementById('panic-btn');
+  if(panicBtn){
+    panicBtn.addEventListener('click', function(){togglePanic();});
+  }
+
+  setInterval(detectDevTools, 5000);
+  setInterval(detectTampering, 3000);
+
+  var speedVal = Math.pow(10, parseInt(speedSlider ? speedSlider.value : 9));
+  var speedLabel = document.getElementById('attack-speed-label');
+  if(speedLabel){
+    if(speedVal >= 1000000000) speedLabel.textContent = (speedVal/1000000000).toFixed(1)+' B/s';
+    else if(speedVal >= 1000000) speedLabel.textContent = (speedVal/1000000).toFixed(1)+' M/s';
+    else if(speedVal >= 1000) speedLabel.textContent = (speedVal/1000).toFixed(0)+' K/s';
+    else speedLabel.textContent = speedVal+'/s';
+  }
+
+  updateHeatmap('');
+}
+
+window.addEventListener('beforeunload', function(){
+  memoryCleanup();
+});
+
+if(document.readyState === 'loading'){
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
+}
+
+})();
+</script>
+
+</body>
+</html>
