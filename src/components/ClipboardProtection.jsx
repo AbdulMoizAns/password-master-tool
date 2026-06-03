@@ -7,12 +7,10 @@ export default function ClipboardProtection() {
   const countRef = useRef(null)
 
   const scheduleClear = useCallback(() => {
-    // Cancel any existing timers
     if (timerRef.current) clearTimeout(timerRef.current)
     if (countRef.current) clearInterval(countRef.current)
 
     setRemaining(30)
-    // Countdown tick
     countRef.current = setInterval(() => {
       setRemaining(prev => {
         if (prev <= 1) { clearInterval(countRef.current); return 0 }
@@ -20,7 +18,6 @@ export default function ClipboardProtection() {
       })
     }, 1000)
 
-    // Clear clipboard after 30s
     timerRef.current = setTimeout(async () => {
       try {
         await navigator.clipboard.writeText('')
@@ -30,10 +27,7 @@ export default function ClipboardProtection() {
   }, [])
 
   useEffect(() => {
-    // Intercept copy events globally
-    function onCopy() {
-      scheduleClear()
-    }
+    function onCopy() { scheduleClear() }
     document.addEventListener('copy', onCopy)
     return () => {
       document.removeEventListener('copy', onCopy)
@@ -45,7 +39,7 @@ export default function ClipboardProtection() {
   if (remaining === 0) return null
 
   return (
-    <div className="fixed bottom-4 right-4 z-50 flex items-center gap-2 px-3 py-2 border border-[var(--neon)] rounded bg-black/80 text-[10px] text-[var(--neon)]"
+    <div className="fixed bottom-20 right-4 z-50 flex items-center gap-2 px-3 py-2 border border-[var(--accent)] rounded bg-[var(--bg-deep)]/90 text-[10px] neon-text-sm"
       style={{ boxShadow: '0 0 10px rgba(0,255,65,0.2)' }}>
       <Shield size={12} />
       <span>Clipboard auto-clear in <span className="font-bold">{remaining}s</span></span>

@@ -81,20 +81,20 @@ export default function DiagnosticExport({ password, attackSpeed, history, sessi
   }, [generateLog])
 
   return (
-    <section className="no-select neon-panel p-4">
-      <div className="flex items-center justify-between mb-3">
-        <h2 className="text-sm md:text-base font-bold neon-text tracking-widest">[ diagnostic.export ]</h2>
-        <div className="text-[10px] text-[rgba(0,255,65,0.3)]">AUDIT LOG</div>
+    <section className="no-select bento-panel">
+      <div className="bento-panel-header">
+        <h2 className="bento-panel-title">[ diagnostic.export ]</h2>
+        <div className="bento-panel-badge">AUDIT LOG</div>
       </div>
       <div className="flex gap-2">
-        <button onClick={download} className="flex-1 text-xs px-3 py-2 border border-[var(--neon-glow)] text-[var(--neon)] rounded hover:bg-[rgba(0,255,65,0.1)] flex items-center justify-center gap-1">
+        <button onClick={download} className="btn flex-1 justify-center">
           <Download size={12} /> DOWNLOAD .TXT
         </button>
-        <button onClick={copyLog} className="text-xs px-3 py-2 border border-[var(--neon-glow)] text-[var(--neon)] rounded hover:bg-[rgba(0,255,65,0.1)] flex items-center gap-1">
-          <FileText size={12} /> {copied ? 'COPIED!' : 'COPY'}
+        <button onClick={copyLog} className={`btn ${copied ? 'btn-copied' : ''}`}>
+          <FileText size={12} /> {copied ? 'OK' : 'COPY'}
         </button>
       </div>
-      <div className="text-[9px] text-[rgba(0,255,65,0.25)] mt-2 text-center">
+      <div className="text-[9px] text-muted mt-2 text-center">
         Exports full session diagnostic data including entropy history, advice, and crack-time metrics.
       </div>
     </section>

@@ -4,13 +4,20 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        mono: ['"Share Tech Mono"', '"Fira Code"', 'monospace'],
+        display: ['"JetBrains Mono"', '"Share Tech Mono"', 'monospace'],
+        mono: ['"Fira Code"', '"Share Tech Mono"', 'monospace'],
       },
       colors: {
         neon: {
-          green: '#00ff41',
+          accent: '#00FF41',
+          primary: '#00E635',
+          muted: '#008822',
           dim: 'rgba(0,255,65,0.4)',
           red: '#ff2a2a',
+        },
+        risk: {
+          warning: '#FFD700',
+          danger: '#FF3131',
         },
       },
       keyframes: {

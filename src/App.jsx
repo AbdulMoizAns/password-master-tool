@@ -63,7 +63,6 @@ export default function App() {
   const lastViolation = useRef(0)
   const lastRecorded = useRef('')
 
-  // Debounced history recording (avoids react-hooks/set-state-in-effect by using setTimeout callback)
   useEffect(() => {
     if (password.length < 2) return
     const timer = setTimeout(() => {
@@ -150,7 +149,7 @@ export default function App() {
 
   if (!booted) {
     return (
-      <div onContextMenu={onContextMenu} className="min-h-screen flex flex-col items-center justify-center p-4">
+      <div onContextMenu={onContextMenu} className="min-h-screen flex flex-col items-center justify-center p-4" style={{ background: 'var(--bg-deep)' }}>
         <div className="crt-scanlines" />
         <div className="crt-vignette" />
         <Header />
@@ -169,16 +168,16 @@ export default function App() {
   }
 
   return (
-    <div onContextMenu={onContextMenu} className="min-h-screen p-3 md:p-6">
+    <div onContextMenu={onContextMenu} className="min-h-screen p-3 md:p-6" style={{ background: 'var(--bg-deep)' }}>
       <div className="crt-scanlines" />
       <div className="crt-vignette" />
       <div className="max-w-7xl mx-auto">
         <Header />
 
         {/* Navigation bar */}
-        <div className="no-select mb-4 border border-[var(--neon-glow)] rounded p-2 bg-[rgba(0,255,65,0.02)] flex items-center justify-between">
-          <div className="text-[10px] text-[rgba(0,255,65,0.4)] tracking-widest">TERMINAL MODE</div>
-          <button onClick={() => setScreen('blog')} className="text-xs px-3 py-1 border border-[var(--neon)] text-[var(--neon)] rounded hover:bg-[rgba(0,255,65,0.1)] tracking-widest">
+        <div className="no-select mb-4 bento-panel flex items-center justify-between">
+          <div className="text-[10px] text-muted tracking-widest">TERMINAL MODE</div>
+          <button onClick={() => setScreen('blog')} className="btn btn-primary">
             SECURITY BLOG →
           </button>
         </div>
@@ -218,13 +217,13 @@ export default function App() {
         </div>
 
         {/* Blog link */}
-        <div className="no-select mb-4 border border-[var(--neon-glow)] rounded p-3 bg-[rgba(0,255,65,0.02)]">
+        <div className="no-select mb-4 bento-panel">
           <div className="flex items-center justify-between">
             <div>
               <div className="text-xs neon-text font-bold tracking-widest">SECURITY EDUCATION BLOG</div>
-              <div className="text-[10px] text-[rgba(0,255,65,0.4)]">55+ articles on passwords, breaches, phishing &amp; privacy</div>
+              <div className="text-[10px] text-muted">55+ articles on passwords, breaches, phishing &amp; privacy</div>
             </div>
-            <button onClick={() => setScreen('blog')} className="text-xs px-4 py-2 border border-[var(--neon)] text-[var(--neon)] rounded hover:bg-[rgba(0,255,65,0.1)] tracking-widest">
+            <button onClick={() => setScreen('blog')} className="btn btn-primary">
               BROWSE →
             </button>
           </div>

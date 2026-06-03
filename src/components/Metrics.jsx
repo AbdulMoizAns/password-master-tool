@@ -1,8 +1,8 @@
-function Cell({ label, value, color = 'var(--neon)' }) {
+function Cell({ label, value, color = 'var(--data-primary)' }) {
   return (
-    <div className="no-select border border-[var(--neon-glow)] rounded p-3 bg-black/40">
-      <div className="text-[10px] tracking-widest text-[rgba(0,255,65,0.4)] mb-1">{label}</div>
-      <div className="text-sm md:text-base font-bold" style={{ color, textShadow: '0 0 4px rgba(0,255,65,0.2)' }}>
+    <div className="metric-cell">
+      <div className="metric-label">{label}</div>
+      <div className="metric-value" style={{ color, textShadow: `0 0 4px ${color}40` }}>
         {value}
       </div>
     </div>
@@ -10,7 +10,7 @@ function Cell({ label, value, color = 'var(--neon)' }) {
 }
 
 export default function Metrics({ length, charset, entropy, crackTime }) {
-  const entColor = entropy >= 80 ? 'var(--neon)' : entropy >= 60 ? '#00c8ff' : entropy >= 40 ? '#ffa000' : '#ff5050'
+  const entColor = entropy >= 80 ? 'var(--accent)' : entropy >= 60 ? '#00c8ff' : entropy >= 40 ? 'var(--warning)' : 'var(--danger)'
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
       <Cell label="LENGTH" value={length} />

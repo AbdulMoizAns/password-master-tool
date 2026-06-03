@@ -1,37 +1,152 @@
-# Password Master – Ethical Hacking Terminal
+# Password Master – Secure Terminal
 
-**Our Vision:** To foster a digital environment where individuals recognize the critical importance of password security and completely eliminate the use of vulnerable passwords.
+A comprehensive, client-side password security education and analysis tool built with **React + Vite + Tailwind CSS**. Features a retro terminal aesthetic with real-time password analysis, cryptographically secure generation, breach checking, educational blog, and theatrical security deterrents.
 
-**The Problem:** Currently, 70% of internet users still rely on weak passwords. Common choices like "123456", "password", or "qwerty" can be compromised in just one second. Most users remain completely unaware of the severe security risks their passwords pose.
+## Features
 
-**The Solution:** Password Master provides immediate, real-time insights by displaying:
-* The exact entropy of the password.
-* The estimated time required for a hacker to crack it.
-* Immediate warnings if the password has been exposed in a known data breach.
+### Core Password Tools
+- **Password Analyzer `[analyzer.exe]`** — Shannon entropy, charset size, brute-force crack time calculator (adjustable attack speed: 1K/s to 100B/s), strength classification, dynamic audit advice
+- **Password Generator `[generator.elf]`** — `crypto.getRandomValues()` with strict per-criteria guarantee (every selected character class appears at least once), length 8–64
+- **HIBP Integration** — k-anonymity check against Have I Been Pwned (sends only first 5 chars of SHA-1 hash, never the plaintext)
+- **Real-time SHA-256 Hashing** — Live Web Crypto API hash display
+- **Top-20 Dictionary Check** — Instantly flags passwords matching the 20 most common leaked passwords: "🔥 CRACKED (top 20 common) - BREACHED"
 
-**Why This Tool Stands Out:**
-* **Precise Crack Time Estimation:** Goes beyond generic strength bars to provide exact timeframes.
-* **Adjustable Attack Speed Slider:** Allows users to simulate threat levels ranging from standard online attacks to nation-state computing power.
-* **Visual Heatmap:** Helps users easily determine the optimal combination of password length and character sets.
-* **HIBP Integration:** Verifies passwords against real-world data breaches using the "Have I Been Pwned" database.
-* **Live SHA-256 Hashing:** Displays the hash in real-time for educational purposes.
+### Educational Blog (100 Articles)
+- Full **Security Education Blog** with 100 articles covering passwords, breaches, phishing, privacy, 2FA, password managers, and cybersecurity fundamentals
+- Category filters: ALL / PASSWORDS / SECURITY / BREACHES / PHISHING / PRIVACY
+- Search bar, responsive grid layout, full markdown reader
+- Lazy-loaded via `import.meta.glob` — each post code-split into its own chunk
+- SEO meta tags, Schema.org Article microdata
 
-**How to Use:**
-1. Type in a password or use the generator.
-2. Review the estimated crack time to assess the vulnerability of your password.
-3. Generate and adopt a robust, secure password.
-4. Run a breach check—if your password has been leaked, change it immediately.
+### Additional Tools
+| Feature | Description |
+|---|---|
+| **`[vault.enc]`** | Local encrypted password vault with add/delete/view, base64-encoded localStorage, .txt export |
+| **`[entropy.history]`** | Canvas line chart tracking entropy bits over your session |
+| **`[entropy.waveform]`** | 32-bar CSS waveform responding to real-time entropy (amplitude, speed, hue) |
+| **`[comparison.matrix]`** | 3-way side-by-side password comparison: length, charset, entropy, crack time, strength bars, failure points |
+| **`[dict.attack]`** | Sandboxed wordlist brute-force simulator (100–100K wordlists), animated progress, live log |
+| **`[totp.2fa]`** | Educational RFC 6238 6-digit TOTP authenticator widget with 30s rotation and countdown bar |
+| **`[similarity.monitor]`** | Detects incremental/sequential password patterns (Admin1 → Admin2) against session history |
+| **`[diagnostic.export]`** | Downloads full audit log (.txt) with all metrics, entropy history, advice, and crack-time data |
+| **Clipboard Protection** | Auto-clears clipboard buffer 30s after any copy action with live countdown indicator |
+| **Hotkey HUD** | Toggleable keybinding overlay (Shift+H) showing all hotkeys |
 
-**Technical Specifications:**
-* Secure random password generation utilizing the Web Crypto API.
-* Privacy-focused HIBP API calls using k-anonymity (ensuring the full password is never transmitted to the server).
-* Cross-Site Scripting (XSS) protection via CSP meta tags.
-* DevTools detection coupled with local ban simulation to deter unauthorized inspection.
+### Security & Anti-Inspection
+- **DevTools Detection** — Viewport dimension diff + `debugger` timing trap, fires every 1.5s
+- **Shortcut Blocking** — F12, Ctrl+Shift+I/C/J, Cmd+Option+I, Ctrl+U, Ctrl+S blocked
+- **Right-Click Blocked** — Global `onContextMenu` prevention
+- **Panic Button** — `Escape` key instantly wipes all state and inputs
+- **Lockdown Simulation** — Triggered by DevTools/shortcuts, generates fake IP + session fingerprint, 7-day ban stored across 4 redundant localStorage keys
+- **Memory Clearing** — `beforeunload` event listener wipes state on page close
+- **CSS Copy Protection** — `select-none` on labels, `allow-select` on inputs/outputs
 
-**Future Roadmap:**
-* Password Vault (Secure, local encrypted storage)
-* Exportable PDF security reports
-* Dedicated browser extension
-* Custom wordlist upload capabilities
+### Aesthetic
+- Dark terminal theme with matrix green neon accents (`#00ff41`)
+- CRT scanline overlay + vignette effect
+- Share Tech Mono / Fira Code typography
+- Blinking cursor in footer
+- Pill badges: ETHICAL BREACH LAB / CRACK-TIME SIMULATOR / QUANTUM RESISTANT VIBE
+- Footer: `$_> BRUTE-FORCE RESISTANCE ANALYZER | v.0x7E4`
 
-**Disclaimer:** *This tool is designed strictly for educational and ethical purposes. IP blocking features are simulated. For maximum real-world security, always enable Two-Factor Authentication (2FA) and utilize a trusted password manager.*
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Framework | React 19 + Vite 8 |
+| Styling | Tailwind CSS 3 + custom CSS (CRT effects, neon glow) |
+| Icons | lucide-react |
+| Crypto | Web Crypto API (`crypto.getRandomValues`, `crypto.subtle`) |
+| Routing | View-state based (no router dependency) |
+| Blog | `import.meta.glob` lazy-loading of 100 markdown files |
+| Linting | ESLint + React Hooks plugin |
+
+## Getting Started
+
+```bash
+# Install dependencies
+npm install
+
+# Start dev server
+npm run dev
+
+# Production build
+npm run build
+
+# Preview production build
+npm run preview
+```
+
+## Project Structure
+
+```
+├── blog-posts/              # 100 educational markdown articles
+├── public/
+├── scripts/
+│   └── generate-blog-posts.js     # Blog post generator
+├── src/
+│   ├── App.jsx              # Main shell: state, lockdown, routing
+│   ├── main.jsx             # React entry point
+│   ├── index.css            # Tailwind + CRT scanlines + neon glow
+│   ├── lib/
+│   │   ├── security.js      # Entropy, top-20 dict, SHA-1/256, HIBP, generator, audit
+│   │   ├── blog.js          # Blog post loader + category mapping
+│   │   ├── vault.js         # Encrypted vault persistence
+│   │   ├── totp.js          # RFC 6238 TOTP implementation
+│   │   └── similarity.js    # Levenshtein distance + incremental detection
+│   └── components/
+│       ├── Header.jsx       # Title + 3 badges
+│       ├── BootSequence.jsx # Terminal boot animation
+│       ├── Analyzer.jsx     # Password analysis panel
+│       ├── Generator.jsx    # Password generator panel
+│       ├── Metrics.jsx      # Entropy/charset/length/crack-time grid
+│       ├── HashDisplay.jsx  # SHA-256 live hash
+│       ├── HibpCheck.jsx    # k-anonymity HIBP fetch
+│       ├── Vault.jsx        # Encrypted credential store
+│       ├── StrengthChart.jsx      # Canvas entropy history chart
+│       ├── EntropyWaveform.jsx    # Animated CSS entropy waveform
+│       ├── ComparisonMatrix.jsx   # 3-way password comparison
+│       ├── DictAttack.jsx         # Dictionary attack simulator
+│       ├── TotpWidget.jsx         # Educational 2FA TOTP widget
+│       ├── SimilarityMonitor.jsx  # Password sequence detection
+│       ├── DiagnosticExport.jsx   # Audit log .txt download
+│       ├── ClipboardProtection.jsx # 30s auto-clear timer
+│       ├── HotkeyHud.jsx          # Keybinding overlay
+│       ├── Blog.jsx               # Blog listing with search + filters
+│       ├── PostPage.jsx           # Full post markdown reader
+│       ├── Lockdown.jsx           # Ban screen overlay
+│       └── Footer.jsx             # Legal notice + blinking cursor
+├── index.html
+├── tailwind.config.js
+├── postcss.config.js
+├── vite.config.js
+├── package.json
+└── eslint.config.js
+```
+
+## Navigation
+
+```
+Boot Screen → Terminal Tool → [SECURITY BLOG →] Blog Listing → click post → Full Reader
+                              ↑                                     ← BACK
+                              └─────── ← BACK TO TERMINAL
+```
+
+- **Shift+H** — Toggle hotkey HUD overlay
+- **Escape** — Panic: wipe all state and inputs
+- **F12/Ctrl+Shift+I** — Blocked + triggers lockdown simulation
+
+## Privacy
+
+- All password analysis happens entirely **client-side** in your browser
+- Zero data transmitted to external servers (except HIBP k-anonymity hash prefix)
+- No tracking, analytics, or telemetry
+- HIBP integration uses the k-anonymity protocol — only the first 5 characters of your password's SHA-1 hash are sent to the API
+
+## Educational Notice
+
+> ⚠️ **This tool is for educational & ethical hacking use only.** IP blocking, logging, and ban simulations are client-side deterrents for educational purposes. Reverse engineering attempts violate terms of use. No plaintext passwords are ever logged or transmitted to unauthorized servers.
+
+## License
+
+Private project — all rights reserved.

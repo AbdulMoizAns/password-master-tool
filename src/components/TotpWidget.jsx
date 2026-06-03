@@ -8,7 +8,6 @@ export default function TotpWidget() {
   const [expiresIn, setExpiresIn] = useState(30)
   const [copied, setCopied] = useState(false)
 
-  // Run every 5s for new code, every 1s for countdown
   useEffect(() => {
     const gi = setInterval(() => generateTOTP(secret).then(r => { setTotp(r.totp); setExpiresIn(r.expiresIn) }).catch(() => {}), 5000)
     const ci = setInterval(() => {
@@ -28,13 +27,13 @@ export default function TotpWidget() {
   }
 
   const pct = (expiresIn / 30) * 100
-  const circleColor = expiresIn > 10 ? '#00ff41' : expiresIn > 5 ? '#ffa000' : '#ff5050'
+  const circleColor = expiresIn > 10 ? 'var(--accent)' : expiresIn > 5 ? 'var(--warning)' : 'var(--danger)'
 
   return (
-    <section className="no-select neon-panel p-4">
-      <div className="flex items-center justify-between mb-3">
-        <h2 className="text-sm md:text-base font-bold neon-text tracking-widest">[ totp.2fa ]</h2>
-        <div className="flex items-center gap-1 text-[10px] text-[rgba(0,255,65,0.3)]">
+    <section className="no-select bento-panel">
+      <div className="bento-panel-header">
+        <h2 className="bento-panel-title">[ totp.2fa ]</h2>
+        <div className="flex items-center gap-1 text-[10px] text-muted">
           <Shield size={12} /> 30S ROTATION
         </div>
       </div>
@@ -49,19 +48,19 @@ export default function TotpWidget() {
             style={{ borderColor: circleColor, color: circleColor, boxShadow: `0 0 4px ${circleColor}40` }}>
             {expiresIn}
           </div>
-          <div className="w-24 h-1.5 bg-black/60 rounded overflow-hidden border border-[var(--neon-glow)]">
+          <div className="w-24 h-1.5 bg-black/60 rounded overflow-hidden border border-[var(--border-subtle)]">
             <div className="h-full rounded transition-all duration-1000" style={{ width: `${pct}%`, background: circleColor, boxShadow: `0 0 4px ${circleColor}` }} />
           </div>
-          <button onClick={copyCode} className="text-[10px] px-2 py-1 border border-[var(--neon-glow)] text-[var(--neon)] rounded hover:bg-[rgba(0,255,65,0.1)] flex items-center gap-1">
+          <button onClick={copyCode} className={`btn min-h-0 py-1 ${copied ? 'btn-copied' : ''}`}>
             {copied ? <Check size={12} /> : <Copy size={12} />}
           </button>
         </div>
       </div>
 
-      <div className="text-[9px] text-[rgba(0,255,65,0.3)] text-center">
-        Secret: <span className="text-[var(--neon)] font-mono text-[8px] break-all">{secret}</span>
+      <div className="text-[9px] text-muted text-center">
+        Secret: <span className="neon-text-sm font-mono text-[8px] break-all">{secret}</span>
       </div>
-      <div className="text-[9px] text-[rgba(0,255,65,0.2)] mt-1 text-center">
+      <div className="text-[9px] text-muted mt-1 text-center">
         Educational simulation only. Not connected to any real authentication service.
       </div>
     </section>

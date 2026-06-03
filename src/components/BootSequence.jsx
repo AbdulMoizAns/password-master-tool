@@ -35,14 +35,14 @@ export default function BootSequence({ onComplete }) {
 
   return (
     <div className="no-select w-full max-w-2xl mx-auto">
-      <div className="border border-[var(--neon-glow)] rounded p-4 bg-black/60 min-h-[260px]">
+      <div className="bento-panel min-h-[260px]">
         {lines.map((line, i) => (
-          <div key={i} className="text-[var(--neon)] text-xs md:text-sm leading-relaxed">
+          <div key={i} className="neon-text-sm text-xs md:text-sm leading-relaxed">
             {line}
           </div>
         ))}
         {!done && (
-          <div className="text-[var(--neon)] text-xs md:text-sm">
+          <div className="neon-text-sm text-xs md:text-sm">
             <span className="animate-blink">▊</span>
           </div>
         )}
@@ -50,7 +50,7 @@ export default function BootSequence({ onComplete }) {
           <div className="mt-6 text-center">
             <button
               onClick={onComplete}
-              className="px-8 py-3 border border-[var(--neon)] text-[var(--neon)] text-sm tracking-widest rounded hover:bg-[rgba(0,255,65,0.1)] transition-all"
+              className="btn btn-primary px-8 py-3 tracking-widest"
               style={{ boxShadow: '0 0 8px rgba(0,255,65,0.4)' }}
             >
               [ ENTER TERMINAL ]

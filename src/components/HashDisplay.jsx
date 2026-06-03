@@ -23,19 +23,14 @@ export default function HashDisplay({ password }) {
   }
 
   return (
-    <div className="no-select border border-[var(--neon-glow)] rounded p-3 bg-black/40">
+    <div className="metric-cell">
       <div className="flex items-center justify-between mb-2">
-        <div className="text-[10px] tracking-widest text-[rgba(0,255,65,0.4)]">SHA-256 HASH</div>
-        <button
-          onClick={copy}
-          disabled={!hash}
-          className="text-[10px] px-2 py-1 border border-[var(--neon-glow)] text-[var(--neon)] rounded hover:bg-[rgba(0,255,65,0.1)] disabled:opacity-30 flex items-center gap-1"
-        >
-          {copied ? <><Check size={12} /> COPIED!</> : <><Copy size={12} /> COPY</>}
+        <div className="metric-label">SHA-256 HASH</div>
+        <button onClick={copy} disabled={!hash} className={`btn min-h-0 py-0.5 px-2 ${copied ? 'btn-copied' : ''}`}>
+          {copied ? <><Check size={12} /> OK</> : <Copy size={12} />}
         </button>
       </div>
-      <div className="font-mono text-[10px] md:text-xs text-[var(--neon)] break-all allow-select min-h-[20px]"
-        style={{ textShadow: '0 0 2px rgba(0,255,65,0.2)' }}>
+      <div className="font-mono text-[10px] md:text-xs neon-text-sm break-all allow-select min-h-[20px]">
         {hash || '—'}
       </div>
     </div>

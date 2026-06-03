@@ -9,7 +9,6 @@ const WORDLIST_LABELS = [
 ]
 
 function simulateSpeed(wordlistSize, speed) {
-  // Number of attempts to simulate visually
   const total = Math.min(wordlistSize, 500)
   const msPerWord = 1000 / speed
   return { total, msPerWord }
@@ -46,7 +45,6 @@ export default function DictAttack() {
       idx++
       const pct = Math.round((idx / total) * 100)
       setProgress(pct)
-      // Simulate random "found" at ~60-80%
       if (!foundAt && Math.random() < 0.003 && idx > total * 0.3) {
         foundAt = idx
         setFound(true)
@@ -68,22 +66,22 @@ export default function DictAttack() {
   }
 
   return (
-    <section className="no-select neon-panel p-4">
-      <div className="flex items-center justify-between mb-3">
-        <h2 className="text-sm md:text-base font-bold neon-text tracking-widest">[ dict.attack ]</h2>
-        <div className="text-[10px] text-[rgba(0,255,65,0.3)]">SANDBOX SIMULATION</div>
+    <section className="no-select bento-panel">
+      <div className="bento-panel-header">
+        <h2 className="bento-panel-title">[ dict.attack ]</h2>
+        <div className="bento-panel-badge">SANDBOX SIMULATION</div>
       </div>
 
       <div className="space-y-3 mb-3">
         <div>
           <div className="flex items-center justify-between mb-1">
-            <span className="text-[10px] text-[rgba(0,255,65,0.4)]">WORDLIST SIZE</span>
-            <span className="text-[10px] text-[var(--neon)]">{wordlistSize.toLocaleString()}</span>
+            <span className="text-[10px] text-muted">WORDLIST SIZE</span>
+            <span className="text-[10px] neon-text-sm">{wordlistSize.toLocaleString()}</span>
           </div>
           <div className="flex gap-1">
             {WORDLIST_LABELS.map(w => (
               <button key={w.value} onClick={() => !running && setWordlistSize(w.value)}
-                className={`flex-1 text-[9px] px-1 py-1 border rounded ${wordlistSize === w.value ? 'border-[var(--neon)] text-[var(--neon)] bg-[rgba(0,255,65,0.1)]' : 'border-[var(--neon-glow)] text-[rgba(0,255,65,0.5)] hover:bg-[rgba(0,255,65,0.05)]'}`}>
+                className={`flex-1 text-[9px] px-1 py-1 rounded border ${wordlistSize === w.value ? 'border-[var(--accent)] neon-text-sm bg-[rgba(0,255,65,0.08)]' : 'border-[var(--border-subtle)] text-muted hover:border-[var(--border-default)]'}`}>
                 {w.label}
               </button>
             ))}
@@ -92,33 +90,33 @@ export default function DictAttack() {
 
         <div>
           <div className="flex items-center justify-between mb-1">
-            <span className="text-[10px] text-[rgba(0,255,65,0.4)]">ATTACK SPEED</span>
-            <span className="text-[10px] text-[var(--neon)]">{speed.toExponential(2)} /sec</span>
+            <span className="text-[10px] text-muted">ATTACK SPEED</span>
+            <span className="text-[10px] neon-text-sm">{speed.toExponential(2)} /sec</span>
           </div>
           <input type="range" min="100000" max="100000000000" step="100000" value={speed} onChange={e => setSpeed(Number(e.target.value))} className="w-full" />
-          <div className="flex justify-between text-[9px] text-[rgba(0,255,65,0.3)]"><span>100K/s</span><span>1B/s</span><span>100B/s</span></div>
+          <div className="flex justify-between text-[9px] text-muted"><span>100K/s</span><span>1B/s</span><span>100B/s</span></div>
         </div>
       </div>
 
       {!running && progress === 0 && (
-        <button onClick={start} className="w-full text-xs py-2 border border-[var(--neon)] text-[var(--neon)] rounded hover:bg-[rgba(0,255,65,0.1)] flex items-center justify-center gap-2">
+        <button onClick={start} className="btn btn-primary w-full justify-center py-2">
           <Play size={14} /> START SIMULATION
         </button>
       )}
 
       {(running || progress > 0) && (
         <div className="space-y-2">
-          <div className="w-full h-3 bg-black/60 rounded overflow-hidden border border-[var(--neon-glow)]">
+          <div className="w-full h-3 bg-black/60 rounded overflow-hidden border border-[var(--border-subtle)]">
             <div className="h-full transition-all duration-150 rounded" style={{
               width: `${progress}%`,
-              background: found ? '#ff2a2a' : 'linear-gradient(90deg, #00ff41, #00c8ff)',
-              boxShadow: `0 0 6px ${found ? '#ff2a2a' : '#00ff41'}`,
+              background: found ? 'var(--danger)' : 'linear-gradient(90deg, var(--accent), #00c8ff)',
+              boxShadow: `0 0 6px ${found ? 'var(--danger)' : 'var(--accent)'}`,
             }} />
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-[10px] text-[var(--neon)]">{progress}%</span>
-            {found && <span className="text-[10px] text-[#ff2a2a] font-bold">🔥 PASSWORD FOUND</span>}
-            <button onClick={stop} disabled={!running} className="text-[10px] px-2 py-1 border border-[#ff5050] text-[#ff5050] rounded hover:bg-[rgba(255,50,50,0.1)] disabled:opacity-30">
+            <span className="text-[10px] neon-text-sm">{progress}%</span>
+            {found && <span className="text-[10px] text-[var(--danger)] font-bold">PASSWORD FOUND</span>}
+            <button onClick={stop} disabled={!running} className="btn btn-danger min-h-0 py-0.5 px-2">
               <Square size={12} />
             </button>
           </div>
@@ -126,14 +124,14 @@ export default function DictAttack() {
       )}
 
       {log.length > 0 && (
-        <div className="mt-3 border border-[var(--neon-glow)] rounded p-2 bg-black/60 max-h-24 overflow-y-auto">
+        <div className="mt-3 border border-[var(--border-subtle)] rounded p-2 bg-black/60 max-h-24 overflow-y-auto">
           {log.slice(-8).map((line, i) => (
-            <div key={i} className="text-[9px] text-[var(--neon)] leading-relaxed">{line}</div>
+            <div key={i} className="text-[9px] neon-text-sm leading-relaxed">{line}</div>
           ))}
         </div>
       )}
 
-      <div className="flex items-center gap-1 mt-2 text-[9px] text-[rgba(0,255,65,0.25)]">
+      <div className="flex items-center gap-1 mt-2 text-[9px] text-muted">
         <Zap size={10} />
         <span>Sandboxed simulation using {wordlistSize <= 1000 ? 'fast' : 'realistic'} timing. No actual data transmitted.</span>
       </div>
